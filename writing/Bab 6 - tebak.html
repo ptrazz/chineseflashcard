@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Tebak Hanzi — Bab 6</title>
+<style>
+  body {
+    margin:0;
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: linear-gradient(135deg, #d9fef3, #f9ffff);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    height:100vh;
+    color:#123;
+  }
+  .card {
+    background:white;
+    padding:40px 30px;
+    border-radius:18px;
+    box-shadow:0 10px 40px rgba(0,0,0,0.08);
+    text-align:center;
+    width:90%;
+    max-width:650px;
+  }
+  h1 {
+    color:#02897a;
+    font-size:30px;
+    margin-bottom:10px;
+  }
+  .pinyin { font-size:28px; color:#111; margin:16px 0 8px; }
+  .arti { font-size:22px; color:#02897a; margin-bottom:20px; }
+  input {
+    font-size:26px;
+    padding:10px 14px;
+    border:2px solid #a3f0df;
+    border-radius:10px;
+    text-align:center;
+    width:80%;
+    outline:none;
+  }
+  .result { margin:16px 0; font-size:22px; min-height:30px; }
+  button {
+    border:none;
+    border-radius:10px;
+    padding:12px 20px;
+    font-size:18px;
+    cursor:pointer;
+    margin:6px;
+    transition:transform .2s, box-shadow .2s;
+  }
+  button:hover {
+    transform:translateY(-2px);
+    box-shadow:0 6px 15px rgba(0,0,0,0.1);
+  }
+  .primary { background:#4fe0c8; color:#fff; }
+  .secondary { background:white; border:2px solid #a3f0df; color:#02897a; }
+  .meta { margin-top:12px; color:#777; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Tebak Hanzi — Bab 6</h1>
+  <div class="pinyin" id="pinyin">—</div>
+  <div class="arti" id="arti">—</div>
+  <input id="jawaban" placeholder="Ketik Hanzi di sini" />
+  <div class="result" id="hasil"></div>
+  <div>
+    <button class="primary" id="cekBtn">Periksa Jawaban</button>
+    <button class="secondary" id="revealBtn">Tampilkan Jawaban</button>
+  </div>
+  <div>
+    <button class="secondary" id="prevBtn">Previous</button>
+    <button class="primary" id="nextBtn">Next</button>
+  </div>
+  <div class="meta" id="meta"></div>
+</div>
+<script>
+const VOCAB = [{"hanzi": "到", "pinyin": "dào", "indonesia": "tiba / sampai"}, {"hanzi": "说", "pinyin": "shuō", "indonesia": "berkata / berbicara"}, {"hanzi": "大", "pinyin": "dà", "indonesia": "besar"}, {"hanzi": "小", "pinyin": "xiǎo", "indonesia": "kecil"}, {"hanzi": "来", "pinyin": "lái", "indonesia": "datang"}, {"hanzi": "吗", "pinyin": "ma", "indonesia": "(partikel tanya ya/tidak)"}, {"hanzi": "看见", "pinyin": "kànjiàn", "indonesia": "melihat / tampak"}, {"hanzi": "大学", "pinyin": "dàxué", "indonesia": "universitas"}, {"hanzi": "银行", "pinyin": "yínháng", "indonesia": "bank"}, {"hanzi": "药房", "pinyin": "yàofáng", "indonesia": "apotek"}, {"hanzi": "饭馆", "pinyin": "fànguǎn", "indonesia": "restoran"}, {"hanzi": "火车站", "pinyin": "huǒchēzhàn", "indonesia": "stasiun kereta"}, {"hanzi": "电影院", "pinyin": "diànyǐngyuàn", "indonesia": "bioskop"}, {"hanzi": "车站", "pinyin": "chēzhàn", "indonesia": "terminal / halte / stasiun"}, {"hanzi": "医院", "pinyin": "yīyuàn", "indonesia": "rumah sakit"}, {"hanzi": "咖啡馆", "pinyin": "kāfēiguǎn", "indonesia": "kedai kopi / kafe"}, {"hanzi": "办公室", "pinyin": "bàngōngshì", "indonesia": "kantor"}, {"hanzi": "商店", "pinyin": "shāngdiàn", "indonesia": "toko"}, {"hanzi": "市场", "pinyin": "shìchǎng", "indonesia": "pasar"}, {"hanzi": "宿舍", "pinyin": "sùshè", "indonesia": "asrama"}];
+
+let index = 0;
+let historyStack = [];
+
+function show(i){
+  const item = VOCAB[i];
+  document.getElementById('pinyin').textContent = item.pinyin || '';
+  document.getElementById('arti').textContent = item.indonesia || '';
+  document.getElementById('jawaban').value = '';
+  document.getElementById('hasil').textContent = '';
+  document.getElementById('meta').textContent = (i+1)+' / '+VOCAB.length;
+}
+
+document.getElementById('cekBtn').addEventListener('click',()=>{
+  const ans = document.getElementById('jawaban').value.trim();
+  const benar = VOCAB[index].hanzi.trim();
+  const hasil = document.getElementById('hasil');
+  if(ans===benar){hasil.style.color='green';hasil.textContent='✅ Benar!';}
+  else{hasil.style.color='crimson';hasil.textContent='❌ Salah — Jawaban: '+benar;}
+});
+
+document.getElementById('revealBtn').addEventListener('click',()=>{
+  const benar = VOCAB[index].hanzi.trim();
+  document.getElementById('hasil').style.color='#333';
+  document.getElementById('hasil').textContent='Jawaban: '+benar;
+});
+
+document.getElementById('nextBtn').addEventListener('click',()=>{
+  if(index<VOCAB.length-1){historyStack.push(index);index++;show(index);}
+});
+
+document.getElementById('prevBtn').addEventListener('click',()=>{
+  if(historyStack.length>0){index=historyStack.pop();show(index);}
+});
+
+window.onload=()=>show(index);
+</script>
+</body>
+</html>

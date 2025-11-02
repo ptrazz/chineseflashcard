@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Tebak Hanzi — Bab 5</title>
+<style>
+  body {
+    margin:0;
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: linear-gradient(135deg, #d9fef3, #f9ffff);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    height:100vh;
+    color:#123;
+  }
+  .card {
+    background:white;
+    padding:40px 30px;
+    border-radius:18px;
+    box-shadow:0 10px 40px rgba(0,0,0,0.08);
+    text-align:center;
+    width:90%;
+    max-width:650px;
+  }
+  h1 {
+    color:#02897a;
+    font-size:30px;
+    margin-bottom:10px;
+  }
+  .pinyin { font-size:28px; color:#111; margin:16px 0 8px; }
+  .arti { font-size:22px; color:#02897a; margin-bottom:20px; }
+  input {
+    font-size:26px;
+    padding:10px 14px;
+    border:2px solid #a3f0df;
+    border-radius:10px;
+    text-align:center;
+    width:80%;
+    outline:none;
+  }
+  .result { margin:16px 0; font-size:22px; min-height:30px; }
+  button {
+    border:none;
+    border-radius:10px;
+    padding:12px 20px;
+    font-size:18px;
+    cursor:pointer;
+    margin:6px;
+    transition:transform .2s, box-shadow .2s;
+  }
+  button:hover {
+    transform:translateY(-2px);
+    box-shadow:0 6px 15px rgba(0,0,0,0.1);
+  }
+  .primary { background:#4fe0c8; color:#fff; }
+  .secondary { background:white; border:2px solid #a3f0df; color:#02897a; }
+  .meta { margin-top:12px; color:#777; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Tebak Hanzi — Bab 5</h1>
+  <div class="pinyin" id="pinyin">—</div>
+  <div class="arti" id="arti">—</div>
+  <input id="jawaban" placeholder="Ketik Hanzi di sini" />
+  <div class="result" id="hasil"></div>
+  <div>
+    <button class="primary" id="cekBtn">Periksa Jawaban</button>
+    <button class="secondary" id="revealBtn">Tampilkan Jawaban</button>
+  </div>
+  <div>
+    <button class="secondary" id="prevBtn">Previous</button>
+    <button class="primary" id="nextBtn">Next</button>
+  </div>
+  <div class="meta" id="meta"></div>
+</div>
+<script>
+const VOCAB = [{"hanzi": "去", "pinyin": "qù", "indonesia": "pergi"}, {"hanzi": "出", "pinyin": "chū", "indonesia": "keluar"}, {"hanzi": "也", "pinyin": "yě", "indonesia": "juga"}, {"hanzi": "都", "pinyin": "dōu", "indonesia": "semua / semuanya"}, {"hanzi": "多", "pinyin": "duō", "indonesia": "banyak"}, {"hanzi": "里", "pinyin": "lǐ", "indonesia": "dalam"}, {"hanzi": "外", "pinyin": "wài", "indonesia": "luar"}, {"hanzi": "有", "pinyin": "yǒu", "indonesia": "memiliki / ada"}, {"hanzi": "要", "pinyin": "yào", "indonesia": "ingin / mau / harus"}, {"hanzi": "不是", "pinyin": "bú shì", "indonesia": "bukan"}, {"hanzi": "别", "pinyin": "bié", "indonesia": "jangan"}, {"hanzi": "上学", "pinyin": "shàngxué", "indonesia": "pergi sekolah"}, {"hanzi": "放学", "pinyin": "fàngxué", "indonesia": "pulang sekolah"}, {"hanzi": "上课", "pinyin": "shàngkè", "indonesia": "mulai pelajaran / masuk kelas"}, {"hanzi": "下课", "pinyin": "xiàkè", "indonesia": "selesai pelajaran / keluar kelas"}, {"hanzi": "学生", "pinyin": "xuéshēng", "indonesia": "murid / siswa"}, {"hanzi": "同学", "pinyin": "tóngxué", "indonesia": "teman sekelas"}, {"hanzi": "学校", "pinyin": "xuéxiào", "indonesia": "sekolah"}, {"hanzi": "学习", "pinyin": "xuéxí", "indonesia": "belajar"}, {"hanzi": "书", "pinyin": "shū", "indonesia": "buku"}, {"hanzi": "笔", "pinyin": "bǐ", "indonesia": "pena / alat tulis"}, {"hanzi": "橡皮擦", "pinyin": "xiàngpícā", "indonesia": "penghapus"}, {"hanzi": "手机", "pinyin": "shǒujī", "indonesia": "handphone"}, {"hanzi": "垃圾桶", "pinyin": "lājītǒng", "indonesia": "tempat sampah"}, {"hanzi": "扫把", "pinyin": "sàobǎ", "indonesia": "sapu"}, {"hanzi": "拖把", "pinyin": "tuōbǎ", "indonesia": "pel"}, {"hanzi": "床", "pinyin": "chuáng", "indonesia": "tempat tidur"}, {"hanzi": "衣柜", "pinyin": "yīguì", "indonesia": "lemari pakaian"}, {"hanzi": "毛巾", "pinyin": "máojīn", "indonesia": "handuk"}, {"hanzi": "衣服", "pinyin": "yīfu", "indonesia": "pakaian"}, {"hanzi": "凉鞋", "pinyin": "liángxié", "indonesia": "sandal"}, {"hanzi": "鞋子", "pinyin": "xiézi", "indonesia": "sepatu"}, {"hanzi": "盘子", "pinyin": "pánzi", "indonesia": "piring"}, {"hanzi": "勺子", "pinyin": "sháozi", "indonesia": "sendok"}, {"hanzi": "叉子", "pinyin": "chāzi", "indonesia": "garpu"}];
+
+let index = 0;
+let historyStack = [];
+
+function show(i){
+  const item = VOCAB[i];
+  document.getElementById('pinyin').textContent = item.pinyin || '';
+  document.getElementById('arti').textContent = item.indonesia || '';
+  document.getElementById('jawaban').value = '';
+  document.getElementById('hasil').textContent = '';
+  document.getElementById('meta').textContent = (i+1)+' / '+VOCAB.length;
+}
+
+document.getElementById('cekBtn').addEventListener('click',()=>{
+  const ans = document.getElementById('jawaban').value.trim();
+  const benar = VOCAB[index].hanzi.trim();
+  const hasil = document.getElementById('hasil');
+  if(ans===benar){hasil.style.color='green';hasil.textContent='✅ Benar!';}
+  else{hasil.style.color='crimson';hasil.textContent='❌ Salah — Jawaban: '+benar;}
+});
+
+document.getElementById('revealBtn').addEventListener('click',()=>{
+  const benar = VOCAB[index].hanzi.trim();
+  document.getElementById('hasil').style.color='#333';
+  document.getElementById('hasil').textContent='Jawaban: '+benar;
+});
+
+document.getElementById('nextBtn').addEventListener('click',()=>{
+  if(index<VOCAB.length-1){historyStack.push(index);index++;show(index);}
+});
+
+document.getElementById('prevBtn').addEventListener('click',()=>{
+  if(historyStack.length>0){index=historyStack.pop();show(index);}
+});
+
+window.onload=()=>show(index);
+</script>
+</body>
+</html>
