@@ -57,7 +57,7 @@
 
   <script>
     // Base URL GitHub Pages
-    const baseURL = "https://ptrazz.github.io/chineseflashcard/";
+    const baseURL1 = "https://ptrazz.github.io/chineseflashcard/vocab";
 
     // ===== Grid 1 =====
     const pages1 = [
@@ -82,10 +82,12 @@
       const name1 = p.replace(".html","").replace(/-/g," ").replace(/\b\w/g, c => c.toUpperCase());
       const div = document.createElement('div');
       div.className = 'card1';
-      div.innerHTML = `<a href="${baseURL + p}" target="_blank">${name1}</a>`;
+      div.innerHTML = `<a href="${baseURL1 + p}" target="_blank">${name1}</a>`;
       grid1.appendChild(div);
     });
 
+    // Base URL GitHub Pages
+    const baseURL2 = "https://ptrazz.github.io/chineseflashcard/writing";
     // ===== Grid 2 =====
     const pages2 = [
       "Bab 3.html",
@@ -111,7 +113,7 @@
       const name2 = p.replace(".html","").replace(/-/g," ").replace(/\b\w/g, c => c.toUpperCase());
       const div = document.createElement('div');
       div.className = 'card2';
-      div.innerHTML = `<a href="${baseURL + p}" target="_blank">${name2}</a>`;
+      div.innerHTML = `<a href="${baseURL2 + p}" target="_blank">${name2}</a>`;
       grid2.appendChild(div);
     });
 
@@ -140,7 +142,7 @@
       const name3 = p.replace(".html","").replace(/-/g," ").replace(/\b\w/g, c => c.toUpperCase());
       const div = document.createElement('div');
       div.className = 'card3';
-      div.innerHTML = `<a href="${baseURL + p}" target="_blank">${name3}</a>`;
+      div.innerHTML = `<a href="${baseURL2 + p}" target="_blank">${name3}</a>`;
       grid3.appendChild(div);
     });
   </script>
@@ -148,6 +150,7 @@
   
 </body>
 </html>
+
 
 
 
