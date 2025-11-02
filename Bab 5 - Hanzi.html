@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tebak Pinyin — Bab 5</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f8fafc;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      color: #2563eb;
+      margin-bottom: 10px;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      margin: 0 auto;
+      max-width: 420px;
+    }
+    .hanzi {
+      font-size: 72px;
+      margin: 20px 0 10px 0;
+    }
+    .arti {
+      font-size: 18px;
+      color: #334155;
+      margin-bottom: 10px;
+    }
+    .pinyin {
+      font-size: 22px;
+      color: #475569;
+      margin-bottom: 20px;
+      display: none;
+    }
+    button {
+      background-color: #93c5fd;
+      border: none;
+      color: white;
+      font-size: 16px;
+      border-radius: 8px;
+      padding: 10px 18px;
+      margin: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background-color: #60a5fa;
+    }
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tebak Pinyin — Bab 5</h1>
+
+  <label><input type="checkbox" id="acak" /> Acak urutan</label>
+
+  <div class="card">
+    <div id="hanzi" class="hanzi"></div>
+    <div id="arti" class="arti"></div>
+    <div id="pinyin" class="pinyin"></div>
+
+    <button id="showBtn">Show Pinyin</button>
+    <div>
+      <button id="prevBtn">Previous</button>
+      <button id="nextBtn">Next</button>
+    </div>
+  </div>
+
+  <script>
+    const data = [{'hanzi': '去', 'pinyin': 'qù', 'arti': 'pergi'}, {'hanzi': '出', 'pinyin': 'chū', 'arti': 'keluar'}, {'hanzi': '也', 'pinyin': 'yě', 'arti': 'juga'}, {'hanzi': '都', 'pinyin': 'dōu', 'arti': 'semua / semuanya'}, {'hanzi': '多', 'pinyin': 'duō', 'arti': 'banyak'}, {'hanzi': '里', 'pinyin': 'lǐ', 'arti': 'dalam'}, {'hanzi': '外', 'pinyin': 'wài', 'arti': 'luar'}, {'hanzi': '有', 'pinyin': 'yǒu', 'arti': 'memiliki / ada'}, {'hanzi': '要', 'pinyin': 'yào', 'arti': 'ingin / mau / harus'}, {'hanzi': '不是', 'pinyin': 'bú shì', 'arti': 'bukan'}, {'hanzi': '别', 'pinyin': 'bié', 'arti': 'jangan'}, {'hanzi': '上学', 'pinyin': 'shàngxué', 'arti': 'pergi sekolah'}, {'hanzi': '放学', 'pinyin': 'fàngxué', 'arti': 'pulang sekolah'}, {'hanzi': '上课', 'pinyin': 'shàngkè', 'arti': 'mulai pelajaran / masuk kelas'}, {'hanzi': '下课', 'pinyin': 'xiàkè', 'arti': 'selesai pelajaran / keluar kelas'}, {'hanzi': '学生', 'pinyin': 'xuéshēng', 'arti': 'murid / siswa'}, {'hanzi': '同学', 'pinyin': 'tóngxué', 'arti': 'teman sekelas'}, {'hanzi': '学校', 'pinyin': 'xuéxiào', 'arti': 'sekolah'}, {'hanzi': '学习', 'pinyin': 'xuéxí', 'arti': 'belajar'}, {'hanzi': '书', 'pinyin': 'shū', 'arti': 'buku'}, {'hanzi': '笔', 'pinyin': 'bǐ', 'arti': 'pena / alat tulis'}, {'hanzi': '橡皮擦', 'pinyin': 'xiàngpícā', 'arti': 'penghapus'}, {'hanzi': '手机', 'pinyin': 'shǒujī', 'arti': 'handphone'}, {'hanzi': '垃圾桶', 'pinyin': 'lājītǒng', 'arti': 'tempat sampah'}, {'hanzi': '扫把', 'pinyin': 'sàobǎ', 'arti': 'sapu'}, {'hanzi': '拖把', 'pinyin': 'tuōbǎ', 'arti': 'pel'}, {'hanzi': '床', 'pinyin': 'chuáng', 'arti': 'tempat tidur'}, {'hanzi': '衣柜', 'pinyin': 'yīguì', 'arti': 'lemari pakaian'}, {'hanzi': '毛巾', 'pinyin': 'máojīn', 'arti': 'handuk'}, {'hanzi': '衣服', 'pinyin': 'yīfu', 'arti': 'pakaian'}, {'hanzi': '凉鞋', 'pinyin': 'liángxié', 'arti': 'sandal'}, {'hanzi': '鞋子', 'pinyin': 'xiézi', 'arti': 'sepatu'}, {'hanzi': '盘子', 'pinyin': 'pánzi', 'arti': 'piring'}, {'hanzi': '勺子', 'pinyin': 'sháozi', 'arti': 'sendok'}, {'hanzi': '叉子', 'pinyin': 'chāzi', 'arti': 'garpu'}];
+
+    let index = 0;
+    const hanziEl = document.getElementById("hanzi");
+    const artiEl = document.getElementById("arti");
+    const pinyinEl = document.getElementById("pinyin");
+    const showBtn = document.getElementById("showBtn");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const acakEl = document.getElementById("acak");
+
+    function render() {
+      const item = data[index];
+      hanziEl.textContent = item.hanzi;
+      artiEl.textContent = item.arti;
+      pinyinEl.textContent = item.pinyin;
+      pinyinEl.style.display = "none";
+      showBtn.textContent = "Show Pinyin";
+    }
+
+    showBtn.addEventListener("click", () => {
+      if (pinyinEl.style.display === "none") {
+        pinyinEl.style.display = "block";
+        showBtn.textContent = "Hide Pinyin";
+      } else {
+        pinyinEl.style.display = "none";
+        showBtn.textContent = "Show Pinyin";
+      }
+    });
+
+    prevBtn.addEventListener("click", () => {
+      index = (index - 1 + data.length) % data.length;
+      render();
+    });
+
+    nextBtn.addEventListener("click", () => {
+      index = (index + 1) % data.length;
+      render();
+    });
+
+    acakEl.addEventListener("change", () => {
+      if (acakEl.checked) {
+        data.sort(() => Math.random() - 0.5);
+      }
+      index = 0;
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>

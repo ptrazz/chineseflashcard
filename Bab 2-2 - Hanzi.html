@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tebak Pinyin — Bab 2-2</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f8fafc;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      color: #2563eb;
+      margin-bottom: 10px;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      margin: 0 auto;
+      max-width: 420px;
+    }
+    .hanzi {
+      font-size: 72px;
+      margin: 20px 0 10px 0;
+    }
+    .arti {
+      font-size: 18px;
+      color: #334155;
+      margin-bottom: 10px;
+    }
+    .pinyin {
+      font-size: 22px;
+      color: #475569;
+      margin-bottom: 20px;
+      display: none;
+    }
+    button {
+      background-color: #93c5fd;
+      border: none;
+      color: white;
+      font-size: 16px;
+      border-radius: 8px;
+      padding: 10px 18px;
+      margin: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background-color: #60a5fa;
+    }
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tebak Pinyin — Bab 2-2</h1>
+
+  <label><input type="checkbox" id="acak" /> Acak urutan</label>
+
+  <div class="card">
+    <div id="hanzi" class="hanzi"></div>
+    <div id="arti" class="arti"></div>
+    <div id="pinyin" class="pinyin"></div>
+
+    <button id="showBtn">Show Pinyin</button>
+    <div>
+      <button id="prevBtn">Previous</button>
+      <button id="nextBtn">Next</button>
+    </div>
+  </div>
+
+  <script>
+    const data = [{'hanzi': '甜', 'pinyin': 'tián', 'arti': 'Manis'}, {'hanzi': '苦', 'pinyin': 'kǔ', 'arti': 'Pahit'}, {'hanzi': '辣', 'pinyin': 'là', 'arti': 'Pedas'}, {'hanzi': '酸', 'pinyin': 'suān', 'arti': 'Asam'}, {'hanzi': '咸', 'pinyin': 'xián', 'arti': 'Asin'}, {'hanzi': '味道', 'pinyin': 'wèidao', 'arti': 'rasa'}, {'hanzi': '几乎', 'pinyin': 'jīhū', 'arti': 'hampir'}, {'hanzi': '饿', 'pinyin': 'è', 'arti': 'Lapar'}, {'hanzi': '饱', 'pinyin': 'bǎo', 'arti': 'Kenyang'}, {'hanzi': '无聊', 'pinyin': 'wúliáo', 'arti': 'Bosan'}, {'hanzi': '忍耐', 'pinyin': 'rěnnài', 'arti': 'Sabar'}, {'hanzi': '不忍耐', 'pinyin': 'bùrěnnài', 'arti': 'Tidak sabar'}, {'hanzi': '幸运', 'pinyin': 'xìngyùn', 'arti': 'Beruntung'}, {'hanzi': '感动', 'pinyin': 'gǎndòng', 'arti': 'Tersentuh'}, {'hanzi': '可怜', 'pinyin': 'kělián', 'arti': 'Kasihan'}, {'hanzi': '可爱', 'pinyin': 'kě’ài', 'arti': 'Comel'}, {'hanzi': '害怕', 'pinyin': 'hàipà', 'arti': 'Takut'}, {'hanzi': '困惑', 'pinyin': 'kùnhuò', 'arti': 'Bingung'}];
+
+    let index = 0;
+    const hanziEl = document.getElementById("hanzi");
+    const artiEl = document.getElementById("arti");
+    const pinyinEl = document.getElementById("pinyin");
+    const showBtn = document.getElementById("showBtn");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const acakEl = document.getElementById("acak");
+
+    function render() {
+      const item = data[index];
+      hanziEl.textContent = item.hanzi;
+      artiEl.textContent = item.arti;
+      pinyinEl.textContent = item.pinyin;
+      pinyinEl.style.display = "none";
+      showBtn.textContent = "Show Pinyin";
+    }
+
+    showBtn.addEventListener("click", () => {
+      if (pinyinEl.style.display === "none") {
+        pinyinEl.style.display = "block";
+        showBtn.textContent = "Hide Pinyin";
+      } else {
+        pinyinEl.style.display = "none";
+        showBtn.textContent = "Show Pinyin";
+      }
+    });
+
+    prevBtn.addEventListener("click", () => {
+      index = (index - 1 + data.length) % data.length;
+      render();
+    });
+
+    nextBtn.addEventListener("click", () => {
+      index = (index + 1) % data.length;
+      render();
+    });
+
+    acakEl.addEventListener("change", () => {
+      if (acakEl.checked) {
+        data.sort(() => Math.random() - 0.5);
+      }
+      index = 0;
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>
