@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Tebak Pinyin — Keterangan Waktu</title>
+<style>
+body{font-family:system-ui,Segoe UI,Roboto,Arial;margin:0;background:#f7fbff;color:#112;display:flex;justify-content:center;align-items:center;min-height:100vh;}
+.card{max-width:700px;width:90%;background:white;padding:24px;border-radius:16px;box-shadow:0 6px 25px rgba(20,40,80,0.08);text-align:center;}
+.hanzi{font-size:72px;font-weight:700;margin:18px 0;}
+.pinyin{font-size:26px;color:#1e90ff;margin-bottom:10px;display:none;}
+.arti{font-size:22px;color:#333;margin-top:12px;}
+.controls-top{margin-bottom:20px;text-align:center;}
+.controls-bottom{display:flex;flex-direction:column;gap:12px;margin-top:24px;align-items:center;}
+button{padding:12px 20px;font-size:18px;border-radius:10px;border:none;cursor:pointer;width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);transition:all .2s;}
+button:hover{transform:translateY(-2px);}
+button.primary{background:#1e90ff;color:white;}
+button.secondary{background:#e8f1ff;color:#004aad;}
+button.neutral{background:#f3f3f3;color:#222;}
+.meta{color:#666;margin-top:10px;font-size:14px;}
+</style>
+</head>
+<body>
+<div class="card">
+  <h2>Tebak Pinyin — Keterangan Waktu</h2>
+  <div class="controls-top"><label><input type="checkbox" id="shuffle"/> Acak</label></div>
+  <div class="hanzi" id="hanzi">—</div>
+  <div class="arti" id="arti">—</div>
+  <div class="pinyin" id="pinyin">—</div>
+  <div class="controls-bottom">
+    <button id="revealBtn" class="neutral">Tampilkan Pinyin</button>
+    <button id="previousBtn" class="secondary">Previous</button>
+    <button id="nextBtn" class="primary">Next</button>
+  </div>
+  <div class="meta" id="meta">0 / 0</div>
+</div>
+
+<script>
+const VOCAB = [{"hanzi": "现在", "pinyin": "xiàn zài", "indonesia": "Sekarang"}, {"hanzi": "昨天", "pinyin": "zuó tiān", "indonesia": "Kemarin"}, {"hanzi": "明天", "pinyin": "míng tiān", "indonesia": "Besok"}, {"hanzi": "刚才", "pinyin": "gāng cái", "indonesia": "Tadi"}, {"hanzi": "稍后", "pinyin": "shāo hòu", "indonesia": "Nanti"}, {"hanzi": "早上", "pinyin": "zǎo shàng", "indonesia": "Pagi"}, {"hanzi": "中午", "pinyin": "zhōng wǔ", "indonesia": "Siang"}, {"hanzi": "下午", "pinyin": "xià wǔ", "indonesia": "Sore"}, {"hanzi": "晚上", "pinyin": "wǎn shàng", "indonesia": "Malam"}, {"hanzi": "总是", "pinyin": "zǒng shì", "indonesia": "Selalu"}, {"hanzi": "经常", "pinyin": "jīng cháng", "indonesia": "Sering"}, {"hanzi": "很少", "pinyin": "hěn shǎo", "indonesia": "Jarang"}, {"hanzi": "从不", "pinyin": "cóng bù", "indonesia": "Tidak Pernah"}, {"hanzi": "快", "pinyin": "kuài", "indonesia": "Cepat"}, {"hanzi": "慢", "pinyin": "màn", "indonesia": "Lambat"}, {"hanzi": "小心", "pinyin": "xiǎo xīn", "indonesia": "Dengan hati-hati"}, {"hanzi": "突然", "pinyin": "tū rán", "indonesia": "Tiba-tiba"}, {"hanzi": "放松", "pinyin": "fàng sōng", "indonesia": "Santai"}, {"hanzi": "轻声", "pinyin": "qīng shēng", "indonesia": "Pelan"}, {"hanzi": "常常", "pinyin": "cháng cháng", "indonesia": "Sering"}, {"hanzi": "有时候", "pinyin": "yǒu shí hòu", "indonesia": "Kadang-kadang"}, {"hanzi": "非常常", "pinyin": "fēi cháng cháng", "indonesia": "Sangat Sering"}, {"hanzi": "从不", "pinyin": "cóng bù", "indonesia": "Tidak Pernah"}, {"hanzi": "每天", "pinyin": "měi tiān", "indonesia": "Setiap Hari"}, {"hanzi": "偶尔", "pinyin": "ǒu ěr", "indonesia": "Kadang"}, {"hanzi": "非常", "pinyin": "fēi cháng", "indonesia": "Sangat"}, {"hanzi": "有点", "pinyin": "yǒu diǎn", "indonesia": "Agak"}, {"hanzi": "够", "pinyin": "gòu", "indonesia": "Cukup"}, {"hanzi": "一点", "pinyin": "yī diǎn", "indonesia": "Sedikit"}, {"hanzi": "更", "pinyin": "gèng", "indonesia": "Lebih"}, {"hanzi": "最", "pinyin": "zuì", "indonesia": "Paling"}, {"hanzi": "因为", "pinyin": "yīn wèi", "indonesia": "Karena"}, {"hanzi": "因此", "pinyin": "yīn cǐ", "indonesia": "Oleh karena itu"}, {"hanzi": "结果", "pinyin": "jié guǒ", "indonesia": "Sebagai akibatnya"}];
+
+let currentIndex = 0;
+function show(index){
+  const item = VOCAB[index];
+  if(!item) return;
+  document.getElementById("hanzi").textContent = item.hanzi;
+  document.getElementById("arti").textContent = item.indonesia;
+  document.getElementById("pinyin").textContent = item.pinyin;
+  document.getElementById("pinyin").style.display = "none";
+  document.getElementById("meta").textContent = (index+1) + " / " + VOCAB.length;
+}
+document.getElementById("nextBtn").addEventListener("click", ()=>{
+  currentIndex = (currentIndex + 1) % VOCAB.length;
+  show(currentIndex);
+});
+document.getElementById("previousBtn").addEventListener("click", ()=>{
+  currentIndex = (currentIndex - 1 + VOCAB.length) % VOCAB.length;
+  show(currentIndex);
+});
+document.getElementById("revealBtn").addEventListener("click", ()=>{
+  document.getElementById("pinyin").style.display = "block";
+});
+window.addEventListener("load", ()=>show(currentIndex));
+</script>
+</body>
+</html>

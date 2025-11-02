@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Tebak Pinyin — Profesi</title>
+<style>
+body{font-family:system-ui,Segoe UI,Roboto,Arial;margin:0;background:#f7fbff;color:#112;display:flex;justify-content:center;align-items:center;min-height:100vh;}
+.card{max-width:700px;width:90%;background:white;padding:24px;border-radius:16px;box-shadow:0 6px 25px rgba(20,40,80,0.08);text-align:center;}
+.hanzi{font-size:72px;font-weight:700;margin:18px 0;}
+.pinyin{font-size:26px;color:#1e90ff;margin-bottom:10px;display:none;}
+.arti{font-size:22px;color:#333;margin-top:12px;}
+.controls-top{margin-bottom:20px;text-align:center;}
+.controls-bottom{display:flex;flex-direction:column;gap:12px;margin-top:24px;align-items:center;}
+button{padding:12px 20px;font-size:18px;border-radius:10px;border:none;cursor:pointer;width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);transition:all .2s;}
+button:hover{transform:translateY(-2px);}
+button.primary{background:#1e90ff;color:white;}
+button.secondary{background:#e8f1ff;color:#004aad;}
+button.neutral{background:#f3f3f3;color:#222;}
+.meta{color:#666;margin-top:10px;font-size:14px;}
+</style>
+</head>
+<body>
+<div class="card">
+  <h2>Tebak Pinyin — Profesi</h2>
+  <div class="controls-top"><label><input type="checkbox" id="shuffle"/> Acak</label></div>
+  <div class="hanzi" id="hanzi">—</div>
+  <div class="arti" id="arti">—</div>
+  <div class="pinyin" id="pinyin">—</div>
+  <div class="controls-bottom">
+    <button id="revealBtn" class="neutral">Tampilkan Pinyin</button>
+    <button id="previousBtn" class="secondary">Previous</button>
+    <button id="nextBtn" class="primary">Next</button>
+  </div>
+  <div class="meta" id="meta">0 / 0</div>
+</div>
+
+<script>
+const VOCAB = [{"hanzi": "医生", "pinyin": "yīshēng", "indonesia": "Dokter"}, {"hanzi": "银行家", "pinyin": "yínháng jiā", "indonesia": "Bankir"}, {"hanzi": "护士", "pinyin": "hùshì", "indonesia": "Perawat"}, {"hanzi": "主持人", "pinyin": "zhǔchí rén", "indonesia": "Penyiar"}, {"hanzi": "老师", "pinyin": "lǎoshī", "indonesia": "Guru"}, {"hanzi": "设计师", "pinyin": "shèjì shī", "indonesia": "Desainer"}, {"hanzi": "学生", "pinyin": "xuéshēng", "indonesia": "Mahasiswa"}, {"hanzi": "艺术家", "pinyin": "yìshùjiā", "indonesia": "Seniman"}, {"hanzi": "音乐家", "pinyin": "yīnyuèjiā", "indonesia": "Musisi"}, {"hanzi": "警察", "pinyin": "jǐngchá", "indonesia": "Polisi"}, {"hanzi": "军人", "pinyin": "jūnrén", "indonesia": "Tentara"}, {"hanzi": "律师", "pinyin": "lǜshī", "indonesia": "Pengacara"}, {"hanzi": "法官", "pinyin": "fǎguān", "indonesia": "Hakim"}, {"hanzi": "公证人", "pinyin": "gōngzhèngrén", "indonesia": "Notaris"}, {"hanzi": "厨师", "pinyin": "chúshī", "indonesia": "Juru Masak"}, {"hanzi": "企业家", "pinyin": "qǐyèjiā", "indonesia": "Pengusaha"}, {"hanzi": "商人", "pinyin": "shāngrén", "indonesia": "Pedagang"}, {"hanzi": "农民", "pinyin": "nóngmín", "indonesia": "Petani"}, {"hanzi": "社会工作者", "pinyin": "shèhuì gōngzuò zhě", "indonesia": "Pekerja Sosial"}, {"hanzi": "工程师", "pinyin": "gōngchéngshī", "indonesia": "Insinyur"}, {"hanzi": "建筑师", "pinyin": "jiànzhùshī", "indonesia": "Arsitek"}, {"hanzi": "会计师", "pinyin": "kuàijì shī", "indonesia": "Akuntan"}, {"hanzi": "作家", "pinyin": "zuòjiā", "indonesia": "Penulis"}, {"hanzi": "摄影师", "pinyin": "shèyǐng shī", "indonesia": "Fotografer"}, {"hanzi": "导演", "pinyin": "dǎoyǎn", "indonesia": "Sutradara"}, {"hanzi": "演员", "pinyin": "yǎnyuán", "indonesia": "Aktor/Aktris"}, {"hanzi": "舞蹈家", "pinyin": "wǔdǎojiā", "indonesia": "Penari"}, {"hanzi": "程序员", "pinyin": "chéngxùyuán", "indonesia": "Programmer"}, {"hanzi": "数据分析师", "pinyin": "shùjù fēnxī shī", "indonesia": "Analis Data"}, {"hanzi": "系统管理员", "pinyin": "xìtǒng guǎnlǐyuán", "indonesia": "Administrator Sistem"}, {"hanzi": "平面设计师", "pinyin": "píngmiàn shèjì shī", "indonesia": "Desainer Grafis"}, {"hanzi": "网页开发人员", "pinyin": "wǎngyè kāifā rényuán", "indonesia": "Web Developer"}];
+
+let currentIndex = 0;
+function show(index){
+  const item = VOCAB[index];
+  if(!item) return;
+  document.getElementById("hanzi").textContent = item.hanzi;
+  document.getElementById("arti").textContent = item.indonesia;
+  document.getElementById("pinyin").textContent = item.pinyin;
+  document.getElementById("pinyin").style.display = "none";
+  document.getElementById("meta").textContent = (index+1) + " / " + VOCAB.length;
+}
+document.getElementById("nextBtn").addEventListener("click", ()=>{
+  currentIndex = (currentIndex + 1) % VOCAB.length;
+  show(currentIndex);
+});
+document.getElementById("previousBtn").addEventListener("click", ()=>{
+  currentIndex = (currentIndex - 1 + VOCAB.length) % VOCAB.length;
+  show(currentIndex);
+});
+document.getElementById("revealBtn").addEventListener("click", ()=>{
+  document.getElementById("pinyin").style.display = "block";
+});
+window.addEventListener("load", ()=>show(currentIndex));
+</script>
+</body>
+</html>

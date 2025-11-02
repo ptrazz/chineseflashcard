@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Tebak Pinyin — Hewan</title>
+<style>
+body{font-family:system-ui,Segoe UI,Roboto,Arial;margin:0;background:#f7fbff;color:#112;display:flex;justify-content:center;align-items:center;min-height:100vh;}
+.card{max-width:700px;width:90%;background:white;padding:24px;border-radius:16px;box-shadow:0 6px 25px rgba(20,40,80,0.08);text-align:center;}
+.hanzi{font-size:72px;font-weight:700;margin:18px 0;}
+.pinyin{font-size:26px;color:#1e90ff;margin-bottom:10px;display:none;}
+.arti{font-size:22px;color:#333;margin-top:12px;}
+.controls-top{margin-bottom:20px;text-align:center;}
+.controls-bottom{display:flex;flex-direction:column;gap:12px;margin-top:24px;align-items:center;}
+button{padding:12px 20px;font-size:18px;border-radius:10px;border:none;cursor:pointer;width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);transition:all .2s;}
+button:hover{transform:translateY(-2px);}
+button.primary{background:#1e90ff;color:white;}
+button.secondary{background:#e8f1ff;color:#004aad;}
+button.neutral{background:#f3f3f3;color:#222;}
+.meta{color:#666;margin-top:10px;font-size:14px;}
+</style>
+</head>
+<body>
+<div class="card">
+  <h2>Tebak Pinyin — Hewan</h2>
+  <div class="controls-top"><label><input type="checkbox" id="shuffle"/> Acak</label></div>
+  <div class="hanzi" id="hanzi">—</div>
+  <div class="arti" id="arti">—</div>
+  <div class="pinyin" id="pinyin">—</div>
+  <div class="controls-bottom">
+    <button id="revealBtn" class="neutral">Tampilkan Pinyin</button>
+    <button id="previousBtn" class="secondary">Previous</button>
+    <button id="nextBtn" class="primary">Next</button>
+  </div>
+  <div class="meta" id="meta">0 / 0</div>
+</div>
+
+<script>
+const VOCAB = [{"hanzi": "狮子", "pinyin": "shīzi", "indonesia": "Singa"}, {"hanzi": "老虎", "pinyin": "lǎohǔ", "indonesia": "Harimau"}, {"hanzi": "大象", "pinyin": "dàxiàng", "indonesia": "Gajah"}, {"hanzi": "马", "pinyin": "mǎ", "indonesia": "Kuda"}, {"hanzi": "水牛", "pinyin": "shuǐniú", "indonesia": "Kerbau"}, {"hanzi": "牛", "pinyin": "niú", "indonesia": "Sapi"}, {"hanzi": "山羊", "pinyin": "shānyáng", "indonesia": "Kambing"}, {"hanzi": "绵羊", "pinyin": "miányáng", "indonesia": "Domba"}, {"hanzi": "狗", "pinyin": "gǒu", "indonesia": "Anjing"}, {"hanzi": "猫", "pinyin": "māo", "indonesia": "Kucing"}, {"hanzi": "鹿", "pinyin": "lù", "indonesia": "Rusa"}, {"hanzi": "斑马", "pinyin": "bānmǎ", "indonesia": "Zebra"}, {"hanzi": "猪", "pinyin": "zhū", "indonesia": "Babi"}, {"hanzi": "猴子", "pinyin": "hóuzi", "indonesia": "Monyet"}, {"hanzi": "熊", "pinyin": "xióng", "indonesia": "Beruang"}, {"hanzi": "鱼", "pinyin": "yú", "indonesia": "Ikan"}, {"hanzi": "螃蟹", "pinyin": "pángxiè", "indonesia": "Kepiting"}, {"hanzi": "龙虾", "pinyin": "lóngxia", "indonesia": "Lobster"}, {"hanzi": "鲸鱼", "pinyin": "jīngyú", "indonesia": "Paus"}, {"hanzi": "鲨鱼", "pinyin": "shāyú", "indonesia": "Hiu"}, {"hanzi": "海龟", "pinyin": "háiguī", "indonesia": "Penyu"}, {"hanzi": "鳗鱼", "pinyin": "mányú", "indonesia": "Belut"}, {"hanzi": "海狮", "pinyin": "hǎishī", "indonesia": "Singa Laut"}, {"hanzi": "美人鱼", "pinyin": "měirényú", "indonesia": "Duyung"}, {"hanzi": "鸟", "pinyin": "niǎo", "indonesia": "Burung"}, {"hanzi": "鹰", "pinyin": "yīng", "indonesia": "Elang"}, {"hanzi": "猎鹰", "pinyin": "lièyīng", "indonesia": "Rajawali"}, {"hanzi": "鹦鹉", "pinyin": "yīngwǔ", "indonesia": "Beo"}, {"hanzi": "鸽子", "pinyin": "gēzi", "indonesia": "Merpati"}, {"hanzi": "蝙蝠", "pinyin": "biānfù", "indonesia": "Kelelawar"}, {"hanzi": "蜻蜓", "pinyin": "qīngtíng", "indonesia": "Capung"}, {"hanzi": "蜜蜂", "pinyin": "mìfēng", "indonesia": "Lebah"}, {"hanzi": "蝴蝶", "pinyin": "húdié", "indonesia": "Kupu-kupu"}, {"hanzi": "蚂蚁", "pinyin": "mǎyǐ", "indonesia": "Semut"}, {"hanzi": "蟑螂", "pinyin": "zhāngláng", "indonesia": "Kecoa"}, {"hanzi": "苍蝇", "pinyin": "cāngyíng", "indonesia": "Lalat"}, {"hanzi": "蚊子", "pinyin": "wénzi", "indonesia": "Nyamuk"}, {"hanzi": "蚂蚱", "pinyin": "mǎzhà", "indonesia": "Belalang"}];
+
+let currentIndex = 0;
+function show(index){
+  const item = VOCAB[index];
+  if(!item) return;
+  document.getElementById("hanzi").textContent = item.hanzi;
+  document.getElementById("arti").textContent = item.indonesia;
+  document.getElementById("pinyin").textContent = item.pinyin;
+  document.getElementById("pinyin").style.display = "none";
+  document.getElementById("meta").textContent = (index+1) + " / " + VOCAB.length;
+}
+document.getElementById("nextBtn").addEventListener("click", ()=>{
+  currentIndex = (currentIndex + 1) % VOCAB.length;
+  show(currentIndex);
+});
+document.getElementById("previousBtn").addEventListener("click", ()=>{
+  currentIndex = (currentIndex - 1 + VOCAB.length) % VOCAB.length;
+  show(currentIndex);
+});
+document.getElementById("revealBtn").addEventListener("click", ()=>{
+  document.getElementById("pinyin").style.display = "block";
+});
+window.addEventListener("load", ()=>show(currentIndex));
+</script>
+</body>
+</html>
