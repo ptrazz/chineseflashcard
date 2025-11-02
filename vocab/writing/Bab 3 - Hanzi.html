@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tebak Pinyin — Bab 3</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f8fafc;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      color: #2563eb;
+      margin-bottom: 10px;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      margin: 0 auto;
+      max-width: 420px;
+    }
+    .hanzi {
+      font-size: 72px;
+      margin: 20px 0 10px 0;
+    }
+    .arti {
+      font-size: 18px;
+      color: #334155;
+      margin-bottom: 10px;
+    }
+    .pinyin {
+      font-size: 22px;
+      color: #475569;
+      margin-bottom: 20px;
+      display: none;
+    }
+    button {
+      background-color: #93c5fd;
+      border: none;
+      color: white;
+      font-size: 16px;
+      border-radius: 8px;
+      padding: 10px 18px;
+      margin: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background-color: #60a5fa;
+    }
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tebak Pinyin — Bab 3</h1>
+
+  <label><input type="checkbox" id="acak" /> Acak urutan</label>
+
+  <div class="card">
+    <div id="hanzi" class="hanzi"></div>
+    <div id="arti" class="arti"></div>
+    <div id="pinyin" class="pinyin"></div>
+
+    <button id="showBtn">Show Pinyin</button>
+    <div>
+      <button id="prevBtn">Previous</button>
+      <button id="nextBtn">Next</button>
+    </div>
+  </div>
+
+  <script>
+    const data = [{'hanzi': '我', 'pinyin': 'wǒ', 'arti': 'saya / aku'}, {'hanzi': '你', 'pinyin': 'nǐ', 'arti': 'kamu'}, {'hanzi': '他', 'pinyin': 'tā', 'arti': 'dia (laki-laki)'}, {'hanzi': '她', 'pinyin': 'tā', 'arti': 'dia (perempuan)'}, {'hanzi': '我们', 'pinyin': 'wǒmen', 'arti': 'kami / kita'}, {'hanzi': '你们', 'pinyin': 'nǐmen', 'arti': 'kalian'}, {'hanzi': '他们', 'pinyin': 'tāmen', 'arti': 'mereka'}, {'hanzi': '先生', 'pinyin': 'xiānsheng', 'arti': 'Tuan'}, {'hanzi': '太太', 'pinyin': 'tàitai', 'arti': 'Nyonya'}, {'hanzi': '小姐', 'pinyin': 'xiǎojiě', 'arti': 'Nona'}, {'hanzi': '爸爸', 'pinyin': 'bàba', 'arti': 'ayah'}, {'hanzi': '妈妈', 'pinyin': 'māma', 'arti': 'ibu'}, {'hanzi': '哥哥', 'pinyin': 'gēge', 'arti': 'kakak laki-laki'}, {'hanzi': '姐姐', 'pinyin': 'jiějie', 'arti': 'kakak perempuan'}, {'hanzi': '弟弟', 'pinyin': 'dìdi', 'arti': 'adik laki-laki'}, {'hanzi': '妹妹', 'pinyin': 'mèimei', 'arti': 'adik perempuan'}, {'hanzi': '谢谢', 'pinyin': 'xièxie', 'arti': 'terima kasih'}, {'hanzi': '不客气', 'pinyin': 'bú kèqi', 'arti': 'sama-sama'}, {'hanzi': '再见', 'pinyin': 'zàijiàn', 'arti': 'sampai jumpa'}, {'hanzi': '欢迎', 'pinyin': 'huānyíng', 'arti': 'selamat datang'}, {'hanzi': '请进', 'pinyin': 'qǐng jìn', 'arti': 'silakan masuk'}];
+
+    let index = 0;
+    const hanziEl = document.getElementById("hanzi");
+    const artiEl = document.getElementById("arti");
+    const pinyinEl = document.getElementById("pinyin");
+    const showBtn = document.getElementById("showBtn");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const acakEl = document.getElementById("acak");
+
+    function render() {
+      const item = data[index];
+      hanziEl.textContent = item.hanzi;
+      artiEl.textContent = item.arti;
+      pinyinEl.textContent = item.pinyin;
+      pinyinEl.style.display = "none";
+      showBtn.textContent = "Show Pinyin";
+    }
+
+    showBtn.addEventListener("click", () => {
+      if (pinyinEl.style.display === "none") {
+        pinyinEl.style.display = "block";
+        showBtn.textContent = "Hide Pinyin";
+      } else {
+        pinyinEl.style.display = "none";
+        showBtn.textContent = "Show Pinyin";
+      }
+    });
+
+    prevBtn.addEventListener("click", () => {
+      index = (index - 1 + data.length) % data.length;
+      render();
+    });
+
+    nextBtn.addEventListener("click", () => {
+      index = (index + 1) % data.length;
+      render();
+    });
+
+    acakEl.addEventListener("change", () => {
+      if (acakEl.checked) {
+        data.sort(() => Math.random() - 0.5);
+      }
+      index = 0;
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>

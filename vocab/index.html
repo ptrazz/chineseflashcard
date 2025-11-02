@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kumpulan Game</title>
+<style>
+  body {
+    font-family: system-ui, sans-serif;
+    background: #f7fbff;
+    margin: 0;
+    padding: 20px;
+  }
+  h1, h2 {
+    text-align: center;
+    color: #1e3a8a;
+    margin-bottom: 30px;
+  }
+  .grid1, .grid2, .grid3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    max-width: 900px;
+    margin: 0 auto 50px;
+  }
+  .card1, .card2, .card3 {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+    transition: transform .2s, box-shadow .2s;
+  }
+  .card1:hover, .card2:hover , .card3:hover{
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  }
+  a {
+    text-decoration: none;
+    color: #1e90ff;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+  <h1>BASIC</h1>
+  <h1>Kelas Vocab</h1>
+  <h2>Tebak Pinyin</h2>
+  <div class="grid1" id="list1"></div>
+
+  <h1>Kelas Writing</h1>
+  <h2>Tebak Arti</h2>
+  <div class="grid2" id="list2"></div>
+
+  <h2>Tebak Pinyin</h2>
+  <div class="grid3" id="list3"></div>
+
+  <script>
+    // Base URL GitHub Pages
+    const baseURL1 = "https://ptrazz.github.io/chineseflashcard/vocab/";
+
+    // ===== Grid 1 =====
+    const pages1 = [
+      "kata-ganti-orang.html",
+      "kata-sifat.html",
+      "kata-kerja.html",
+      "keterangan-waktu.html",
+      "warna.html",
+      "anggota-badan.html",
+      "hewan.html",
+      "kendaraan.html",
+      "buah.html",
+      "pakaian.html",
+      "rumah.html",
+      "profesi.html",
+      "arah.html",
+      "tempat-umum.html"
+    ];
+
+    const grid1 = document.getElementById('list1');
+    pages1.forEach(p => {
+      const name1 = p.replace(".html","").replace(/-/g," ").replace(/\b\w/g, c => c.toUpperCase());
+      const div = document.createElement('div');
+      div.className = 'card1';
+      div.innerHTML = `<a href="${baseURL1 + p}" target="_blank">${name1}</a>`;
+      grid1.appendChild(div);
+    });
+
+    // Base URL GitHub Pages
+    const baseURL2 = "https://ptrazz.github.io/chineseflashcard/writing/";
+    // ===== Grid 2 =====
+    const pages2 = [
+      "Bab 3.html",
+      "Bab 4.html",
+      "Bab 5.html",
+      "Bab 6.html",
+      "Bab 7.html",
+      "Bab 8.html",
+      "Bab 9.html",
+      "Bab 1-2.html",
+      "Bab 2-2.html",
+      "Bab 3-2.html",
+      "Bab 4-2.html",
+      "Bab 5-2.html",
+      "Bab 6-2.html",
+      "Bab 7-2.html",
+      "Bab 8-2.html",
+      "Bab 9-2.html"
+    ];
+
+    const grid2 = document.getElementById('list2');
+    pages2.forEach(p => {
+      const name2 = p.replace(".html","").replace(/-/g," ").replace(/\b\w/g, c => c.toUpperCase());
+      const div = document.createElement('div');
+      div.className = 'card2';
+      div.innerHTML = `<a href="${baseURL2 + p}" target="_blank">${name2}</a>`;
+      grid2.appendChild(div);
+    });
+
+     // ===== Grid 3 =====
+    const pages3 = [
+      "Bab 3 - Hanzi.html",
+      "Bab 4 - Hanzi.html",
+      "Bab 5 - Hanzi.html",
+      "Bab 6 - Hanzi.html",
+      "Bab 7 - Hanzi.html",
+      "Bab 8 - Hanzi.html",
+      "Bab 9 - Hanzi.html",
+      "Bab 1-2 - Hanzi.html",
+      "Bab 2-2 - Hanzi.html",
+      "Bab 3-2 - Hanzi.html",
+      "Bab 4-2 - Hanzi.html",
+      "Bab 5-2 - Hanzi.html",
+      "Bab 6-2 - Hanzi.html",
+      "Bab 7-2 - Hanzi.html",
+      "Bab 8-2 - Hanzi.html",
+      "Bab 9-2 - Hanzi.html"
+    ];
+
+    const grid3 = document.getElementById('list3');
+    pages3.forEach(p => {
+      const name3 = p.replace(".html","").replace(/-/g," ").replace(/\b\w/g, c => c.toUpperCase());
+      const div = document.createElement('div');
+      div.className = 'card3';
+      div.innerHTML = `<a href="${baseURL2 + p}" target="_blank">${name3}</a>`;
+      grid3.appendChild(div);
+    });
+  </script>
+  
+</body>
+</html>
+
+
+
+
+
+
+
+
