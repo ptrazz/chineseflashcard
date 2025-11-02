@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Tebak Arti — Bab 6</title>
+<style>
+body{font-family:system-ui,Segoe UI,Roboto,Arial;margin:0;background:#f7fbff;color:#112;display:flex;justify-content:center;align-items:center;min-height:100vh;}
+.card{max-width:700px;width:90%;background:white;padding:24px;border-radius:16px;box-shadow:0 6px 25px rgba(20,40,80,0.08);text-align:center;}
+.hanzi{font-size:72px;font-weight:700;margin:18px 0;}
+.pinyin{font-size:26px;color:#555;margin-bottom:10px;}
+.arti{font-size:22px;color:#1e90ff;margin-top:12px;display:none;}
+.controls-top{margin-bottom:20px;text-align:center;}
+.controls-bottom{display:flex;flex-direction:column;gap:12px;margin-top:24px;align-items:center;}
+button{padding:12px 20px;font-size:18px;border-radius:10px;border:none;cursor:pointer;width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);transition:all .2s;}
+button:hover{transform:translateY(-2px);}
+button.primary{background:#1e90ff;color:white;}
+.meta{color:#666;margin-top:10px;font-size:14px;}
+</style>
+
+    <style>
+    /* Added by script: make previous and next buttons block-level and centered */
+    .previous-button, .next-button {
+        display: block;
+        width: 220px;
+        max-width: 90%;
+        margin: 16px auto;
+        padding: 10px 14px;
+        font-size: 16px;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    }
+    .previous-button { background: #e6eef8;  pointer-events:auto; }
+    .next-button { background: #cfe8d8; }
+    </style>
+    
+</head>
+<body>
+<div class="card">
+<h2>Tebak Arti — Bab 6</h2>
+<div class="controls-top">
+<label><input type="checkbox" id="shuffle"/> Acak</label>
+</div>
+<div class="hanzi" id="hanzi">—</div>
+<div class="pinyin" id="pinyin">—</div>
+<div class="arti" id="arti">—</div>
+<div class="controls-bottom">
+<button id="revealBtn">Tampilkan Arti</button>
+<button id="previousBtn" class="previous-button" type="button">Previous</button>
+<button id="nextBtn" class="primary next-button" type="button">Next</button>
+
+</div>
+<div class="meta" id="meta">0 kata</div>
+</div>
+
+<script>
+const VOCAB = [{"hanzi": "到", "pinyin": "dào", "indonesia": "tiba / sampai"}, {"hanzi": "说", "pinyin": "shuō", "indonesia": "berkata / berbicara"}, {"hanzi": "大", "pinyin": "dà", "indonesia": "besar"}, {"hanzi": "小", "pinyin": "xiǎo", "indonesia": "kecil"}, {"hanzi": "来", "pinyin": "lái", "indonesia": "datang"}, {"hanzi": "吗", "pinyin": "ma", "indonesia": "(partikel tanya ya/tidak)"}, {"hanzi": "看见", "pinyin": "kànjiàn", "indonesia": "melihat / tampak"}, {"hanzi": "大学", "pinyin": "dàxué", "indonesia": "universitas"}, {"hanzi": "银行", "pinyin": "yínháng", "indonesia": "bank"}, {"hanzi": "药房", "pinyin": "yàofáng", "indonesia": "apotek"}, {"hanzi": "饭馆", "pinyin": "fànguǎn", "indonesia": "restoran"}, {"hanzi": "火车站", "pinyin": "huǒchēzhàn", "indonesia": "stasiun kereta"}, {"hanzi": "电影院", "pinyin": "diànyǐngyuàn", "indonesia": "bioskop"}, {"hanzi": "车站", "pinyin": "chēzhàn", "indonesia": "terminal / halte / stasiun"}, {"hanzi": "医院", "pinyin": "yīyuàn", "indonesia": "rumah sakit"}, {"hanzi": "咖啡馆", "pinyin": "kāfēiguǎn", "indonesia": "kedai kopi / kafe"}, {"hanzi": "办公室", "pinyin": "bàngōngshì", "indonesia": "kantor"}, {"hanzi": "商店", "pinyin": "shāngdiàn", "indonesia": "toko"}, {"hanzi": "市场", "pinyin": "shìchǎng", "indonesia": "pasar"}, {"hanzi": "宿舍", "pinyin": "sùshè", "indonesia": "asrama"}]; // placeholder, akan diganti di tiap file
+let pool = [...VOCAB];
+let historyStack = [];
+let currentItem = null;
+let currentIndex = -1;
+
+function shuffleArr(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
+
+function pickNext(){
+  if(document.getElementById('shuffle').checked){shuffleArr(pool);}
+  if(pool.length === 0) pool = [...VOCAB];
+  if(currentItem) historyStack.push(currentItem);
+  currentItem = pool.shift();
+  currentIndex = (currentIndex + 1) % VOCAB.length;
+  show(currentItem);
+}
+
+function pickPrevious(){
+  if(historyStack.length === 0) return;
+  pool.unshift(currentItem);
+  currentItem = historyStack.pop();
+  currentIndex = Math.max(currentIndex - 1, 0);
+  show(currentItem);
+}
+
+function show(item){
+  if(!item) return;
+  document.getElementById('hanzi').textContent = item.hanzi;
+  document.getElementById('pinyin').textContent = item.pinyin;
+  document.getElementById('arti').textContent = item.indonesia;
+  document.getElementById('arti').style.display = 'none';
+  document.getElementById('arti').style.display = 'none';
+  document.getElementById('meta').textContent = (currentIndex+1) + ' / ' + VOCAB.length;
+}
+
+document.getElementById('nextBtn').addEventListener('click', pickNext);
+document.getElementById('previousBtn').addEventListener('click', pickPrevious);
+document.getElementById('revealBtn').addEventListener('click', () => {
+  document.getElementById('arti').style.display = 'block';
+});
+
+window.addEventListener('load', () => {
+  currentIndex = -1;
+  pickNext();
+});
+</script>
+
+</body>
+</html>
