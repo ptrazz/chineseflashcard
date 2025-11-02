@@ -55,6 +55,9 @@
   <h2>Tebak Pinyin</h2>
   <div class="grid3" id="list3"></div>
 
+  <h2>Tebak Hanzi</h2>
+  <div class="grid4" id="list4"></div>
+
   <script>
     // Base URL GitHub Pages
     const baseURL1 = "https://ptrazz.github.io/chineseflashcard/vocab/";
@@ -145,10 +148,40 @@
       div.innerHTML = `<a href="${baseURL2 + p}" target="_blank">${name3}</a>`;
       grid3.appendChild(div);
     });
+
+    // ===== Grid 3 =====
+    const pages4 = [
+      "Bab 3 - tebak.html",
+      "Bab 4 - tebak.html",
+      "Bab 5 - tebaki.html",
+      "Bab 6 - tebak.html",
+      "Bab 7 - tebak.html",
+      "Bab 8 - tebak.html",
+      "Bab 9 - tebak.html",
+      "Bab 1-2 - tebak.html",
+      "Bab 2-2 - tebak.html",
+      "Bab 3-2 - tebak.html",
+      "Bab 4-2 - tebak.html",
+      "Bab 5-2 - tebak.html",
+      "Bab 6-2 - tebak.html",
+      "Bab 7-2 - tebak.html",
+      "Bab 8-2 - tebak.html",
+      "Bab 9-2 - tebak.html"
+    ];
+
+    const grid4 = document.getElementById('list4');
+    pages4.forEach(p => {
+      const name4 = p.replace(".html","").replace(/-/g," ").replace(/\b\w/g, c => c.toUpperCase());
+      const div = document.createElement('div');
+      div.className = 'card4';
+      div.innerHTML = `<a href="${baseURL2 + p}" target="_blank">${name4}</a>`;
+      grid3.appendChild(div);
+    });
   </script>
   
 </body>
 </html>
+
 
 
 
