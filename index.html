@@ -16,14 +16,14 @@
     color: #1e3a8a;
     margin-bottom: 30px;
   }
-  .grid1, .grid2 {
+  .grid1, .grid2, .grid3 {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 15px;
     max-width: 900px;
     margin: 0 auto 50px;
   }
-  .card1, .card2 {
+  .card1, .card2, .card3 {
     background: white;
     border-radius: 12px;
     padding: 20px;
@@ -31,7 +31,7 @@
     box-shadow: 0 6px 20px rgba(0,0,0,0.05);
     transition: transform .2s, box-shadow .2s;
   }
-  .card1:hover, .card2:hover {
+  .card1:hover, .card2:hover , .card3:hover{
     transform: translateY(-4px);
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
   }
@@ -44,9 +44,11 @@
 </head>
 <body>
   <h1>BASIC</h1>
+  <h1>Kelas Vocab</h1>
   <h2>Kumpulan Game Tebak Pinyin</h2>
   <div class="grid1" id="list1"></div>
 
+  <h1>Kelas Writing</h1>
   <h2>Kumpulan Game Tebak Arti</h2>
   <div class="grid2" id="list2"></div>
 
@@ -109,8 +111,40 @@
       div.innerHTML = `<a href="${baseURL + p}" target="_blank">${name2}</a>`;
       grid2.appendChild(div);
     });
+
+     // ===== Grid 3 =====
+    const pages3 = [
+      "Bab 3-hanzi.html",
+      "Bab 4-hanzi.html",
+      "Bab 5-hanzi.html",
+      "Bab 6-hanzi.html",
+      "Bab 7-hanzi.html",
+      "Bab 8-hanzi.html",
+      "Bab 9-hanzi.html",
+      "Bab 1-2-hanzi.html",
+      "Bab 2-2-hanzi.html",
+      "Bab 3-2-hanzi.html",
+      "Bab 4-2-hanzi.html",
+      "Bab 5-2-hanzi.html",
+      "Bab 6-2-hanzi.html",
+      "Bab 7-2-hanzi.html",
+      "Bab 8-2-hanzi.html",
+      "Bab 9-2-hanzi.html"
+    ];
+
+    const grid3 = document.getElementById('list3');
+    pages3.forEach(p => {
+      const name3 = p.replace(".html","").replace(/-/g," ").replace(/\b\w/g, c => c.toUpperCase());
+      const div = document.createElement('div');
+      div.className = 'card3';
+      div.innerHTML = `<a href="${baseURL + p}" target="_blank">${name3}</a>`;
+      grid3.appendChild(div);
+    });
   </script>
+  </script>
+  
 </body>
 </html>
+
 
 
