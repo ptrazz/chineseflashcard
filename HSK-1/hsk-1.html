@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Tebak Hanzi — HSK 1</title>
+
+    <style>
+      body {
+        margin: 0;
+        padding: 20px;
+        background: #0d0d0d;
+        color: #eee;
+        font-family: system-ui, sans-serif;
+      }
+
+      h1 {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .card {
+        background: #1a1a1a;
+        padding: 20px;
+        border-radius: 12px;
+        max-width: 600px;
+        margin: 0 auto;
+        box-shadow: 0 0 10px #000;
+      }
+
+      .label {
+        color: #aaa;
+        font-size: 14px;
+        margin-top: 10px;
+      }
+
+      input {
+        width: 100%;
+        padding: 12px;
+        margin-top: 8px;
+        border-radius: 8px;
+        border: 1px solid #444;
+        background: #111;
+        color: #fff;
+        font-size: 20px;
+        text-align: center;
+      }
+
+      button {
+        margin-top: 15px;
+        padding: 12px 20px;
+        background: #333;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        width: 100%;
+      }
+
+      button:hover {
+        background: #444;
+      }
+
+      .nav-buttons {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+      }
+
+      .show-answer {
+        font-size: 32px;
+        text-align: center;
+        margin-top: 10px;
+        color: #4ad86e;
+        display: none;
+      }
+
+      .notif {
+        margin-top: 10px;
+        text-align: center;
+        font-size: 20px;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>Tebak Hanzi</h1>
+
+    <div class="card">
+      <div class="label">Pinyin:</div>
+      <div id="pinyin" style="font-size: 22px; margin-bottom: 10px">---</div>
+
+      <div class="label">Arti (English):</div>
+      <div id="english" style="font-size: 20px; margin-bottom: 20px">---</div>
+
+      <div class="label">Masukkan Hanzi:</div>
+      <input id="inputHanzi" autocomplete="off" />
+
+      <button onclick="cekJawaban()">Cek Jawaban</button>
+
+      <div id="notif" class="notif"></div>
+      <div id="jawaban" class="show-answer"></div>
+
+      <button onclick="tampilkanJawaban()">Tampilkan Jawaban</button>
+
+      <div class="nav-buttons">
+        <button onclick="prev()">Previous</button>
+        <button onclick="next()">Next</button>
+      </div>
+    </div>
+
+    <script>
+      // ===============================
+      // 150 KOSAKATA HSK 1
+      // (Isi tetap sama seperti versi sebelumnya)
+      // ===============================
+      const data = [
+        { hanzi: "我", pinyin: "wǒ", eng: "I, me" },
+        { hanzi: "我们", pinyin: "wǒmen", eng: "we, us" },
+        { hanzi: "你", pinyin: "nǐ", eng: "you" },
+        { hanzi: "他", pinyin: "tā", eng: "he, him" },
+        { hanzi: "她", pinyin: "tā", eng: "she, her" },
+        { hanzi: "这", pinyin: "zhè", eng: "this" },
+        { hanzi: "那", pinyin: "nà", eng: "that" },
+        { hanzi: "哪", pinyin: "nǎ", eng: "which" },
+        { hanzi: "哪儿", pinyin: "nǎr", eng: "where" },
+        { hanzi: "谁", pinyin: "shéi", eng: "who" },
+        { hanzi: "什么", pinyin: "shénme", eng: "what" },
+        { hanzi: "多少", pinyin: "duōshǎo", eng: "how many" },
+        { hanzi: "几", pinyin: "jǐ", eng: "how many" },
+        { hanzi: "怎么", pinyin: "zěnme", eng: "how" },
+        { hanzi: "怎么样", pinyin: "zěnmeyàng", eng: "how about" },
+        { hanzi: "一", pinyin: "yī", eng: "one" },
+        { hanzi: "二", pinyin: "èr", eng: "two" },
+        { hanzi: "三", pinyin: "sān", eng: "three" },
+        { hanzi: "四", pinyin: "sì", eng: "four" },
+        { hanzi: "五", pinyin: "wǔ", eng: "five" },
+        { hanzi: "六", pinyin: "liù", eng: "six" },
+        { hanzi: "七", pinyin: "qī", eng: "seven" },
+        { hanzi: "八", pinyin: "bā", eng: "eight" },
+        { hanzi: "九", pinyin: "jiǔ", eng: "nine" },
+        { hanzi: "十", pinyin: "shí", eng: "ten" },
+        { hanzi: "个", pinyin: "gè", eng: "(measure word)" },
+        { hanzi: "岁", pinyin: "suì", eng: "years old" },
+        { hanzi: "本", pinyin: "běn", eng: "(books)" },
+        { hanzi: "些", pinyin: "xiē", eng: "some" },
+        { hanzi: "块", pinyin: "kuài", eng: "piece" },
+        { hanzi: "不", pinyin: "bù", eng: "no" },
+        { hanzi: "没", pinyin: "méi", eng: "not" },
+        { hanzi: "很", pinyin: "hěn", eng: "very" },
+        { hanzi: "太", pinyin: "tài", eng: "too" },
+        { hanzi: "都", pinyin: "dōu", eng: "all" },
+        { hanzi: "一点儿", pinyin: "yīdiǎnr", eng: "a little bit" },
+        { hanzi: "和", pinyin: "hé", eng: "and" },
+        { hanzi: "在", pinyin: "zài", eng: "at, in" },
+        { hanzi: "的", pinyin: "de", eng: "(possessive)" },
+        { hanzi: "了", pinyin: "le", eng: "(particle)" },
+        { hanzi: "吗", pinyin: "ma", eng: "(question particle)" },
+        { hanzi: "呢", pinyin: "ne", eng: "(particle)" },
+        { hanzi: "喂", pinyin: "wèi", eng: "hello" },
+        { hanzi: "家", pinyin: "jiā", eng: "home" },
+        { hanzi: "学校", pinyin: "xuéxiào", eng: "school" },
+        { hanzi: "饭店", pinyin: "fàndiàn", eng: "restaurant" },
+        { hanzi: "商店", pinyin: "shāngdiàn", eng: "store" },
+        { hanzi: "医院", pinyin: "yīyuàn", eng: "hospital" },
+        { hanzi: "中国", pinyin: "Zhōngguó", eng: "China" },
+        { hanzi: "北京", pinyin: "Běijīng", eng: "Beijing" },
+        { hanzi: "上", pinyin: "shàng", eng: "up" },
+        { hanzi: "下", pinyin: "xià", eng: "down" },
+        { hanzi: "前面", pinyin: "qiánmiàn", eng: "front" },
+        { hanzi: "后面", pinyin: "hòumiàn", eng: "behind" },
+        { hanzi: "里", pinyin: "lǐ", eng: "inside" },
+        { hanzi: "今天", pinyin: "jīntiān", eng: "today" },
+        { hanzi: "明天", pinyin: "míngtiān", eng: "tomorrow" },
+        { hanzi: "昨天", pinyin: "zuótiān", eng: "yesterday" },
+        { hanzi: "上午", pinyin: "shàngwǔ", eng: "morning" },
+        { hanzi: "中午", pinyin: "zhōngwǔ", eng: "noon" },
+        { hanzi: "下午", pinyin: "xiàwǔ", eng: "afternoon" },
+        { hanzi: "年", pinyin: "nián", eng: "year" },
+        { hanzi: "月", pinyin: "yuè", eng: "month" },
+        { hanzi: "号", pinyin: "hào", eng: "date" },
+        { hanzi: "星期", pinyin: "xīngqī", eng: "week" },
+        { hanzi: "点", pinyin: "diǎn", eng: "o'clock" },
+        { hanzi: "分钟", pinyin: "fēnzhōng", eng: "minute" },
+        { hanzi: "现在", pinyin: "xiànzài", eng: "now" },
+        { hanzi: "时候", pinyin: "shíhou", eng: "time" },
+        { hanzi: "爸爸", pinyin: "bàba", eng: "father" },
+        { hanzi: "妈妈", pinyin: "māma", eng: "mother" },
+        { hanzi: "儿子", pinyin: "érzi", eng: "son" },
+        { hanzi: "女儿", pinyin: "nǚ'ér", eng: "daughter" },
+        { hanzi: "老师", pinyin: "lǎoshī", eng: "teacher" },
+        { hanzi: "学生", pinyin: "xuéshēng", eng: "student" },
+        { hanzi: "同学", pinyin: "tóngxué", eng: "classmate" },
+        { hanzi: "朋友", pinyin: "péngyǒu", eng: "friend" },
+        { hanzi: "医生", pinyin: "yīshēng", eng: "doctor" },
+        { hanzi: "先生", pinyin: "xiānsheng", eng: "sir" },
+        { hanzi: "小姐", pinyin: "xiǎojiě", eng: "miss" },
+        { hanzi: "衣服", pinyin: "yīfu", eng: "clothes" },
+        { hanzi: "水", pinyin: "shuǐ", eng: "water" },
+        { hanzi: "菜", pinyin: "cài", eng: "dish" },
+        { hanzi: "米饭", pinyin: "mǐfàn", eng: "rice" },
+        { hanzi: "水果", pinyin: "shuǐguǒ", eng: "fruit" },
+        { hanzi: "苹果", pinyin: "píngguǒ", eng: "apple" },
+        { hanzi: "茶", pinyin: "chá", eng: "tea" },
+        { hanzi: "杯子", pinyin: "bēizi", eng: "cup" },
+        { hanzi: "钱", pinyin: "qián", eng: "money" },
+        { hanzi: "飞机", pinyin: "fēijī", eng: "airplane" },
+        { hanzi: "出租车", pinyin: "chūzūchē", eng: "taxi" },
+        { hanzi: "电视", pinyin: "diànshì", eng: "television" },
+        { hanzi: "电脑", pinyin: "diànnǎo", eng: "computer" },
+        { hanzi: "电影", pinyin: "diànyǐng", eng: "movie" },
+        { hanzi: "天气", pinyin: "tiānqì", eng: "weather" },
+        { hanzi: "猫", pinyin: "māo", eng: "cat" },
+        { hanzi: "狗", pinyin: "gǒu", eng: "dog" },
+        { hanzi: "东西", pinyin: "dōngxi", eng: "thing" },
+        { hanzi: "人", pinyin: "rén", eng: "person" },
+        { hanzi: "名字", pinyin: "míngzi", eng: "name" },
+        { hanzi: "书", pinyin: "shū", eng: "book" },
+        { hanzi: "汉语", pinyin: "hànyǔ", eng: "Chinese language" },
+        { hanzi: "字", pinyin: "zì", eng: "character" },
+        { hanzi: "桌子", pinyin: "zhuōzi", eng: "desk" },
+        { hanzi: "椅子", pinyin: "yǐzi", eng: "chair" },
+        { hanzi: "谢谢", pinyin: "xièxie", eng: "thank you" },
+        { hanzi: "不客气", pinyin: "búkèqi", eng: "you're welcome" },
+        { hanzi: "再见", pinyin: "zàijiàn", eng: "goodbye" },
+        { hanzi: "请", pinyin: "qǐng", eng: "please" },
+        { hanzi: "对不起", pinyin: "duìbuqǐ", eng: "sorry" },
+        { hanzi: "没关系", pinyin: "méiguānxì", eng: "it's okay" },
+        { hanzi: "是", pinyin: "shì", eng: "to be" },
+        { hanzi: "有", pinyin: "yǒu", eng: "have" },
+        { hanzi: "看", pinyin: "kàn", eng: "look" },
+        { hanzi: "听", pinyin: "tīng", eng: "listen" },
+        { hanzi: "说", pinyin: "shuō", eng: "speak" },
+        { hanzi: "读", pinyin: "dú", eng: "read" },
+        { hanzi: "写", pinyin: "xiě", eng: "write" },
+        { hanzi: "看见", pinyin: "kànjiàn", eng: "see" },
+        { hanzi: "叫", pinyin: "jiào", eng: "call" },
+        { hanzi: "来", pinyin: "lái", eng: "come" },
+        { hanzi: "回", pinyin: "huí", eng: "return" },
+        { hanzi: "去", pinyin: "qù", eng: "go" },
+        { hanzi: "吃", pinyin: "chī", eng: "eat" },
+        { hanzi: "喝", pinyin: "hē", eng: "drink" },
+        { hanzi: "睡觉", pinyin: "shuìjiào", eng: "sleep" },
+        { hanzi: "打电话", pinyin: "dǎ diànhuà", eng: "make a call" },
+        { hanzi: "做", pinyin: "zuò", eng: "do" },
+        { hanzi: "买", pinyin: "mǎi", eng: "buy" },
+        { hanzi: "开", pinyin: "kāi", eng: "open" },
+        { hanzi: "坐", pinyin: "zuò", eng: "sit" },
+        { hanzi: "住", pinyin: "zhù", eng: "live" },
+        { hanzi: "学习", pinyin: "xuéxí", eng: "study" },
+        { hanzi: "工作", pinyin: "gōngzuò", eng: "work" },
+        { hanzi: "下雨", pinyin: "xiàyǔ", eng: "rain" },
+        { hanzi: "爱", pinyin: "ài", eng: "love" },
+        { hanzi: "喜欢", pinyin: "xǐhuān", eng: "like" },
+        { hanzi: "想", pinyin: "xiǎng", eng: "want" },
+        { hanzi: "认识", pinyin: "rènshi", eng: "know" },
+        { hanzi: "会", pinyin: "huì", eng: "can" },
+        { hanzi: "能", pinyin: "néng", eng: "able to" },
+        { hanzi: "好", pinyin: "hǎo", eng: "good" },
+        { hanzi: "大", pinyin: "dà", eng: "big" },
+        { hanzi: "小", pinyin: "xiǎo", eng: "small" },
+        { hanzi: "多", pinyin: "duō", eng: "many" },
+        { hanzi: "少", pinyin: "shǎo", eng: "few" },
+        { hanzi: "冷", pinyin: "lěng", eng: "cold" },
+        { hanzi: "热", pinyin: "rè", eng: "hot" },
+        { hanzi: "高兴", pinyin: "gāoxìng", eng: "happy" },
+        { hanzi: "漂亮", pinyin: "piàoliang", eng: "beautiful" },
+      ];
+
+      // ==================================
+      // RANDOM SHUFFLE TANPA ULANG
+      // ==================================
+      let order = [...Array(data.length).keys()]; // 0..149
+      shuffle(order);
+
+      let index = 0;
+
+      // Fungsi shuffle Fisher–Yates
+      function shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+      }
+
+      function tampilkan() {
+        const item = data[order[index]];
+        document.getElementById("pinyin").innerText = item.pinyin;
+        document.getElementById("english").innerText = item.eng;
+        document.getElementById("inputHanzi").value = "";
+        document.getElementById("notif").innerText = "";
+        document.getElementById("jawaban").style.display = "none";
+      }
+
+      function cekJawaban() {
+        const jawab = document.getElementById("inputHanzi").value.trim();
+        const benar = data[order[index]].hanzi;
+        if (jawab === benar) {
+          document.getElementById("notif").innerHTML =
+            "<span style='color:#4ad86e;'>Jawaban Benar ✔</span>";
+        } else {
+          document.getElementById("notif").innerHTML =
+            "<span style='color:#ff5757;'>Salah ✘</span>";
+        }
+      }
+
+      function tampilkanJawaban() {
+        document.getElementById("jawaban").innerText = data[order[index]].hanzi;
+        document.getElementById("jawaban").style.display = "block";
+      }
+
+      function next() {
+        if (index < order.length - 1) {
+          index++;
+          tampilkan();
+        } else {
+          document.getElementById("notif").innerHTML =
+            "<span style='color:#4ad86e;'>Semua kata sudah tampil ✔</span>";
+        }
+      }
+
+      function prev() {
+        if (index > 0) {
+          index--;
+          tampilkan();
+        }
+      }
+
+      tampilkan();
+    </script>
+  </body>
+</html>
