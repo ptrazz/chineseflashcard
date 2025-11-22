@@ -3,33 +3,37 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Tebak Hanzi + OCR</title>
+<title>Tebak Hanzi — OCR.Space (Tanpa API Key)</title>
 <style>
- body{font-family:system-ui;background:#0d1117;color:#eee;margin:0;padding:20px;text-align:center}
- .card{max-width:500px;margin:auto;background:#161b22;padding:20px;border-radius:14px;box-shadow:0 0 20px #0007}
- button{padding:10px 18px;border-radius:8px;border:none;margin:5px;font-size:16px;background:#238636;color:white}
- #hanziPad{width:100%;height:300px;background:white;border-radius:12px;border:2px solid #555}
- .jawaban{font-size:48px;margin:15px 0;color:#4ad86e}
+ body{font-family:system-ui,Segoe UI,Roboto,Arial;background:#0d1117;color:#eee;margin:0;padding:20px;text-align:center}
+ .card{max-width:720px;margin:auto;background:#161b22;padding:20px;border-radius:12px;box-shadow:0 6px 30px #0008}
+ button{padding:10px 16px;border-radius:8px;border:none;margin:6px;font-size:15px;background:#238636;color:white;cursor:pointer}
+ #hanziPad{width:100%;height:340px;background:white;border-radius:10px;border:2px solid #555;display:block}
+ .jawaban{font-size:48px;margin:15px 0;color:#4ad86e;min-height:1.2em}
+ .small{font-size:14px;color:#cfd8dc}
+ .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+ .notice{margin:10px 0;padding:10px;border-radius:8px}
 </style>
 </head>
 <body>
 <h1>Tebak Hanzi</h1>
 <div class="card">
- <div id="pinyin" style="font-size:22px;margin-bottom:10px"></div>
- <div id="artiInggris" style="margin-bottom:20px"></div>
- 
+ <div id="pinyin" style="font-size:20px;margin-bottom:6px"></div>
+ <div id="artiInggris" style="margin-bottom:10px" class="small"></div>
+
  <h3>Gambar Hanzi:</h3>
  <canvas id="hanziPad"></canvas>
- <br>
- <button onclick="clearPad()">Hapus</button>
- <button onclick="cekJawaban()">Cek Jawaban</button>
- 
- <div id="notif" style="margin:10px 0 20px"></div>
- 
- <button onclick="showAnswer()">Tampilkan Jawaban</button>
+ <div class="row" style="margin-top:8px">
+   <button onclick="clearPad()">Hapus</button>
+   <button onclick="cekJawaban()">Cek Jawaban (OCR.Space)</button>
+   <button onclick="showAnswer()">Tampilkan Jawaban</button>
+   <button onclick="loadSample()">Load Sample</button>
+ </div>
+
+ <div id="notif" class="notice small" style="color:yellow"></div>
  <div id="jawaban" class="jawaban"></div>
- 
- <div style="margin-top:20px">
+
+ <div style="margin-top:18px">
    <button onclick="prevCard()">Previous</button>
    <button onclick="nextCard()">Next</button>
  </div>
@@ -37,11 +41,9 @@
 
 <!-- Signature Pad -->
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
-<!-- OCR -->
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
 <script>
-// ===================== DATA 150 KOSAKATA =====================
+// ===================== DATA 150 KOSAKATA (potongan) =====================
 let data = [
  {hanzi:"八", pinyin:"bā", eng:"eight"},
 {hanzi:"爸爸", pinyin:"bàba", eng:"father"},
@@ -139,14 +141,14 @@ let data = [
 {hanzi:"书", pinyin:"shū", eng:"book"},
 ];
 
-// ===================== ORDER SYSTEM =====================
+// random order
 let order = [...Array(data.length).keys()].sort(()=>Math.random()-0.5);
 let index = 0;
 
 function tampilkan(){
  let item = data[order[index]];
- document.getElementById("pinyin").innerHTML = item.pinyin;
- document.getElementById("artiInggris").innerHTML = item.eng;
+ document.getElementById("pinyin").innerHTML = item.pinyin || "";
+ document.getElementById("artiInggris").innerHTML = item.eng || "";
  document.getElementById("jawaban").innerHTML = "";
  document.getElementById("notif").innerHTML = "";
  clearPad();
@@ -162,141 +164,216 @@ let signaturePad;
 
 function resizeCanvas(){
  const ratio = Math.max(window.devicePixelRatio || 1, 1);
+ // keep css size, set actual pixels for high-DPI
  canvas.width = canvas.offsetWidth * ratio;
  canvas.height = canvas.offsetHeight * ratio;
- canvas.getContext("2d").scale(ratio, ratio);
+ const ctx = canvas.getContext("2d");
+ ctx.scale(ratio, ratio);
+ // white background
+ ctx.fillStyle = "#FFFFFF";
+ ctx.fillRect(0,0,canvas.offsetWidth,canvas.offsetHeight);
 }
 
 function initPad(){
  resizeCanvas();
- signaturePad = new SignaturePad(canvas, {backgroundColor:'white',penColor:'black'});
+ signaturePad = new SignaturePad(canvas, {backgroundColor:'rgba(255,255,255,1)',penColor:'black',minWidth:2,maxWidth:6});
+ window.addEventListener('resize', ()=>{ // re-init on resize to keep crisp
+   const data = signaturePad.toData();
+   resizeCanvas();
+   signaturePad = new SignaturePad(canvas, {backgroundColor:'rgba(255,255,255,1)',penColor:'black',minWidth:2,maxWidth:6});
+   signaturePad.fromData(data);
+ });
 }
 
-function clearPad(){ signaturePad.clear(); }
+function clearPad(){ signaturePad.clear(); /* redraw white BG (SignaturePad might keep it) */ 
+ const ctx = canvas.getContext('2d');
+ ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0,0,canvas.offsetWidth,canvas.offsetHeight);
+}
 
-// ===================== OCR =====================
-async function ocrHanzi(){
-  // Ambil gambar dari signaturePad sebagai dataURL
-  const src = signaturePad.toDataURL();
-  document.getElementById("notif").innerHTML = "<span style='color:yellow'>Mengenali tulisan (preprocessing)...</span>";
+// ===================== PREPROCESSING helper =====================
+// Crop to bounding box, pad, resize to square, apply threshold to increase contrast
+async function preprocessDataURL(dataURL, outSize=1024) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const tw = img.width, th = img.height;
+      const tmp = document.createElement('canvas');
+      tmp.width = tw; tmp.height = th;
+      const tctx = tmp.getContext('2d');
+      tctx.drawImage(img,0,0);
+      const id = tctx.getImageData(0,0,tw,th).data;
 
-  // Preprocessing: crop to bounding box, resize, pad, and convert to clean white background
-  function preprocessDataURL(dataURL) {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => {
-        // draw to temporary canvas to access pixels
-        const tmp = document.createElement('canvas');
-        const tw = img.width, th = img.height;
-        tmp.width = tw; tmp.height = th;
-        const tctx = tmp.getContext('2d');
-        tctx.drawImage(img, 0, 0);
-        const id = tctx.getImageData(0,0,tw,th).data;
-
-        // find bounding box of non-white pixels
-        let minX = tw, minY = th, maxX = 0, maxY = 0;
-        for (let y=0; y<th; y++){
-          for (let x=0; x<tw; x++){
-            const i = (y*tw + x)*4;
-            // consider pixel non-white if not nearly white
-            if (!(id[i] > 240 && id[i+1] > 240 && id[i+2] > 240)){
-              if (x < minX) minX = x;
-              if (y < minY) minY = y;
-              if (x > maxX) maxX = x;
-              if (y > maxY) maxY = y;
-            }
+      let minX = tw, minY = th, maxX = 0, maxY = 0;
+      for (let y=0;y<th;y++){
+        for (let x=0;x<tw;x++){
+          const i = (y*tw + x)*4;
+          if (!(id[i] > 240 && id[i+1] > 240 && id[i+2] > 240)){ // non-white
+            if (x < minX) minX = x;
+            if (y < minY) minY = y;
+            if (x > maxX) maxX = x;
+            if (y > maxY) maxY = y;
           }
         }
-        if (maxX < minX || maxY < minY) {
-          // empty drawing -> return original
-          resolve(dataURL);
-          return;
-        }
-
-        // add padding
-        const pad = 20;
-        minX = Math.max(0, minX - pad);
-        minY = Math.max(0, minY - pad);
-        maxX = Math.min(tw, maxX + pad);
-        maxY = Math.min(th, maxY + pad);
-
-        const w = maxX - minX;
-        const h = maxY - minY;
-        const outSize = 1024; // make large for OCR
+      }
+      if (maxX < minX || maxY < minY) {
+        // empty drawing, return original resized
         const out = document.createElement('canvas');
         out.width = outSize; out.height = outSize;
         const octx = out.getContext('2d');
-        // fill white
         octx.fillStyle = '#FFFFFF'; octx.fillRect(0,0,out.width,out.height);
-
-        // preserve aspect ratio and center
-        const scale = Math.min(out.width / w, out.height / h);
-        const dw = Math.round(w * scale);
-        const dh = Math.round(h * scale);
-        const dx = Math.round((out.width - dw)/2);
-        const dy = Math.round((out.height - dh)/2);
-
-        // draw cropped region scaled
-        octx.drawImage(img, minX, minY, w, h, dx, dy, dw, dh);
-
-        // convert to grayscale + increase contrast/threshold
-        const imgd = octx.getImageData(0,0,out.width,out.height);
-        const d = imgd.data;
-        for (let i=0;i<d.length;i+=4){
-          // grayscale
-          const gray = 0.299*d[i] + 0.587*d[i+1] + 0.114*d[i+2];
-          // simple contrast/threshold
-          const t = gray < 200 ? 0 : 255;
-          d[i]=d[i+1]=d[i+2]=t;
-        }
-        octx.putImageData(imgd,0,0);
-
+        // center original
+        const scale = Math.min(out.width/tw, out.height/th);
+        const dw = Math.round(tw*scale), dh = Math.round(th*scale);
+        octx.drawImage(img, 0, 0, tw, th, Math.round((out.width-dw)/2), Math.round((out.height-dh)/2), dw, dh);
         resolve(out.toDataURL('image/png'));
-      };
-      img.src = dataURL;
+        return;
+      }
+
+      const pad = Math.round(Math.max((maxX-minX),(maxY-minY)) * 0.12) + 10;
+      minX = Math.max(0, minX - pad);
+      minY = Math.max(0, minY - pad);
+      maxX = Math.min(tw, maxX + pad);
+      maxY = Math.min(th, maxY + pad);
+
+      const w = maxX - minX, h = maxY - minY;
+      const out = document.createElement('canvas');
+      out.width = outSize; out.height = outSize;
+      const octx = out.getContext('2d');
+      octx.fillStyle = '#FFFFFF'; octx.fillRect(0,0,out.width,out.height);
+
+      const scale = Math.min(out.width / w, out.height / h);
+      const dw = Math.round(w * scale), dh = Math.round(h * scale);
+      const dx = Math.round((out.width - dw)/2), dy = Math.round((out.height - dh)/2);
+
+      octx.drawImage(img, minX, minY, w, h, dx, dy, dw, dh);
+
+      // convert to grayscale + threshold
+      const imgd = octx.getImageData(0,0,out.width,out.height);
+      const d = imgd.data;
+      for (let i=0;i<d.length;i+=4){
+        const gray = 0.299*d[i] + 0.587*d[i+1] + 0.114*d[i+2];
+        // adaptive-like simple threshold to preserve strokes
+        const t = gray < 200 ? 0 : 255;
+        d[i]=d[i+1]=d[i+2]=t;
+      }
+      octx.putImageData(imgd,0,0);
+      resolve(out.toDataURL('image/png'));
+    };
+    img.src = dataURL;
+  });
+}
+
+// ===================== OCR (OCR.Space FREE, no API key) =====================
+async function ocrHanzi() {
+  // take image from signaturePad
+  const src = signaturePad.toDataURL("image/png");
+  document.getElementById("notif").innerHTML = "<span style='color:yellow'>Preprocessing gambar...</span>";
+
+  try {
+    // preprocess to crop+threshold
+    const pre = await preprocessDataURL(src, 1024);
+    document.getElementById("notif").innerHTML = "<span style='color:yellow'>Mengirim ke OCR.Space...</span>";
+
+    // OCR.Space accepts multipart/form-data with "base64Image" field
+    const form = new FormData();
+    // note: prefix required "data:image/png;base64,"
+    form.append("base64Image", pre);
+    form.append("language", "chs"); // "chs" = Chinese Simplified. Use "cht" for Traditional.
+    form.append("isOverlayRequired", "false");
+    // Optional: set OCREngine to 2 (newer) by adding &OCREngine=2 in URL, but here we'll use POST body only.
+
+    const res = await fetch("https://api.ocr.space/parse/image", {
+      method: "POST",
+      body: form
     });
-  }
 
-  try{
-    const pre = await preprocessDataURL(src);
-    document.getElementById("notif").innerHTML = "<span style='color:yellow'>Mengenali tulisan (OCR)...</span>";
+    const data = await res.json();
+    console.log("OCR.Space response:", data);
 
-    // create worker with logger
-    const worker = Tesseract.createWorker({
-      logger: m => console.log(m)
-    });
-
-    await worker.load();
-    await worker.loadLanguage('chi_sim');
-    await worker.initialize('chi_sim');
-
-    // Set whitelist to target character(s) to improve accuracy
-    const target = data[order[index]].hanzi || '';
-    if (target) {
-      await worker.setParameters({ tessedit_char_whitelist: target });
+    if (!data || !data.ParsedResults || data.ParsedResults.length === 0) {
+      return "";
     }
 
-    const { data: { text } } = await worker.recognize(pre);
-    await worker.terminate();
-    return text.trim();
-  } catch(e){
-    console.error('OCR error', e);
-    return '';
+    // ParsedText may contain newlines/spaces; join/clean
+    const parsedText = data.ParsedResults.map(r => r.ParsedText || "").join("\n").trim();
+    return parsedText.replace(/\r/g,"").trim();
+  } catch (err) {
+    console.error("OCR error:", err);
+    return "";
   }
 }
 
+// ===================== cekJawaban (tetap sama interface) =====================
 async function cekJawaban(){
  let target = data[order[index]].hanzi;
+ document.getElementById("notif").innerHTML = "<span style='color:yellow'>Mengenali tulisan...</span>";
  let ocr = await ocrHanzi();
  console.log("OCR:", ocr);
 
- if(ocr.includes(target)){
-   document.getElementById("notif").innerHTML = "<span style='color:#4ad86e'>Jawaban Benar ✔</span>";
- }else{
-   document.getElementById("notif").innerHTML = "<span style='color:#ff5757'>Salah ✘ (OCR: "+ocr+")</span>";
+ if (!ocr) {
+   document.getElementById("notif").innerHTML = "<span style='color:#ffcc00'>OCR tidak menghasilkan teks — coba ulang atau perjelas goresan.</span>";
+   return;
+ }
+
+ // simplify OCR and target for comparison: remove spaces/newlines
+ const ocrClean = ocr.replace(/\s+/g,'');
+ const targetClean = (target || "").replace(/\s+/g,'');
+
+ if (ocrClean.includes(targetClean) || targetClean.includes(ocrClean)) {
+   document.getElementById("notif").innerHTML = "<span style='color:#4ad86e'>Jawaban Benar ✔ (OCR: "+escapeHtml(ocr)+")</span>";
+ } else {
+   document.getElementById("notif").innerHTML = "<span style='color:#ff5757'>Salah ✘ (OCR: "+escapeHtml(ocr)+")</span>";
  }
 }
 
+// utility escape
+function escapeHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ===================== Load sample (path dari file yang kamu upload) =====================
+// Developer-provided path: /mnt/data/69b0ce6a-5a69-4ef4-83c1-6c690e7c5022.png
+// When running locally, replace with appropriate URL or serve that file via HTTP server.
+async function loadSample(){
+  const url = "/mnt/data/69b0ce6a-5a69-4ef4-83c1-6c690e7c5022.png"; // <-- adjust if needed
+  document.getElementById("notif").innerHTML = "<span style='color:yellow'>Memuat sample...</span>";
+  try {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      // draw into canvas (fit)
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0,0,canvas.offsetWidth,canvas.offsetHeight);
+      // compute fit
+      const ar = img.width / img.height;
+      let dw = canvas.offsetWidth, dh = Math.round(dw / ar);
+      if (dh > canvas.offsetHeight) { dh = canvas.offsetHeight; dw = Math.round(dh * ar); }
+      const dx = Math.round((canvas.offsetWidth - dw)/2), dy = Math.round((canvas.offsetHeight - dh)/2);
+      ctx.drawImage(img, 0,0,img.width,img.height, dx, dy, dw, dh);
+
+      // set signaturePad data from canvas pixels: use toDataURL then fromData isn't directly available,
+      // so clear signaturePad (we already drew image on canvas)
+      signaturePad.clear(); // signaturePad thinks blank but visual has image; workaround: we will treat canvas pixels directly when OCR
+      document.getElementById("notif").innerHTML = "<span style='color:#4ad86e'>Sample dimuat. Tekan 'Cek Jawaban' untuk OCR.</span>";
+    };
+    img.onerror = (e)=> { throw new Error('Gagal memuat sample (cek path / CORS)'); };
+    img.src = url;
+  } catch (err) {
+    console.error(err);
+    document.getElementById("notif").innerHTML = "<span style='color:#ff5757'>Gagal memuat sample: "+err.message+"</span>";
+  }
+}
+
+// Overwrite signaturePad.toDataURL to capture either drawn strokes or the canvas image
+// (If user loaded sample by drawImage onto canvas, signaturePad.toDataURL may still return blank; so we read canvas directly)
+const originalToDataURL = () => canvas.toDataURL("image/png");
+
+// Replace signaturePad.toDataURL usage in ocrHanzi by reading canvas directly (already used canvas in ocrHanzi via signaturePad.toDataURL)
+SignaturePad.prototype._orig_toDataURL = SignaturePad.prototype.toDataURL;
+SignaturePad.prototype.toDataURL = function(type) {
+  // prefer reading raw visible canvas pixels (captures both signature and loaded sample)
+  return canvas.toDataURL(type || "image/png");
+};
+
+// ===================== bootstrap =====================
 window.onload = ()=>{ initPad(); tampilkan(); };
 </script>
 </body>
