@@ -176,14 +176,113 @@ function clearPad(){ signaturePad.clear(); }
 
 // ===================== OCR =====================
 async function ocrHanzi(){
- const image = signaturePad.toDataURL();
- document.getElementById("notif").innerHTML = "<span style='color:yellow'>Mengenali tulisan...</span>";
+  // Ambil gambar dari signaturePad sebagai dataURL
+  const src = signaturePad.toDataURL();
+  document.getElementById("notif").innerHTML = "<span style='color:yellow'>Mengenali tulisan (preprocessing)...</span>";
 
- const worker = await Tesseract.createWorker("chi_sim");
- const result = await worker.recognize(image);
- await worker.terminate();
+  // Preprocessing: crop to bounding box, resize, pad, and convert to clean white background
+  function preprocessDataURL(dataURL) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        // draw to temporary canvas to access pixels
+        const tmp = document.createElement('canvas');
+        const tw = img.width, th = img.height;
+        tmp.width = tw; tmp.height = th;
+        const tctx = tmp.getContext('2d');
+        tctx.drawImage(img, 0, 0);
+        const id = tctx.getImageData(0,0,tw,th).data;
 
- return result.data.text.trim();
+        // find bounding box of non-white pixels
+        let minX = tw, minY = th, maxX = 0, maxY = 0;
+        for (let y=0; y<th; y++){
+          for (let x=0; x<tw; x++){
+            const i = (y*tw + x)*4;
+            // consider pixel non-white if not nearly white
+            if (!(id[i] > 240 && id[i+1] > 240 && id[i+2] > 240)){
+              if (x < minX) minX = x;
+              if (y < minY) minY = y;
+              if (x > maxX) maxX = x;
+              if (y > maxY) maxY = y;
+            }
+          }
+        }
+        if (maxX < minX || maxY < minY) {
+          // empty drawing -> return original
+          resolve(dataURL);
+          return;
+        }
+
+        // add padding
+        const pad = 20;
+        minX = Math.max(0, minX - pad);
+        minY = Math.max(0, minY - pad);
+        maxX = Math.min(tw, maxX + pad);
+        maxY = Math.min(th, maxY + pad);
+
+        const w = maxX - minX;
+        const h = maxY - minY;
+        const outSize = 1024; // make large for OCR
+        const out = document.createElement('canvas');
+        out.width = outSize; out.height = outSize;
+        const octx = out.getContext('2d');
+        // fill white
+        octx.fillStyle = '#FFFFFF'; octx.fillRect(0,0,out.width,out.height);
+
+        // preserve aspect ratio and center
+        const scale = Math.min(out.width / w, out.height / h);
+        const dw = Math.round(w * scale);
+        const dh = Math.round(h * scale);
+        const dx = Math.round((out.width - dw)/2);
+        const dy = Math.round((out.height - dh)/2);
+
+        // draw cropped region scaled
+        octx.drawImage(img, minX, minY, w, h, dx, dy, dw, dh);
+
+        // convert to grayscale + increase contrast/threshold
+        const imgd = octx.getImageData(0,0,out.width,out.height);
+        const d = imgd.data;
+        for (let i=0;i<d.length;i+=4){
+          // grayscale
+          const gray = 0.299*d[i] + 0.587*d[i+1] + 0.114*d[i+2];
+          // simple contrast/threshold
+          const t = gray < 200 ? 0 : 255;
+          d[i]=d[i+1]=d[i+2]=t;
+        }
+        octx.putImageData(imgd,0,0);
+
+        resolve(out.toDataURL('image/png'));
+      };
+      img.src = dataURL;
+    });
+  }
+
+  try{
+    const pre = await preprocessDataURL(src);
+    document.getElementById("notif").innerHTML = "<span style='color:yellow'>Mengenali tulisan (OCR)...</span>";
+
+    // create worker with logger
+    const worker = Tesseract.createWorker({
+      logger: m => console.log(m)
+    });
+
+    await worker.load();
+    await worker.loadLanguage('chi_sim');
+    await worker.initialize('chi_sim');
+
+    // Set whitelist to target character(s) to improve accuracy
+    const target = data[order[index]].hanzi || '';
+    if (target) {
+      await worker.setParameters({ tessedit_char_whitelist: target });
+    }
+
+    const { data: { text } } = await worker.recognize(pre);
+    await worker.terminate();
+    return text.trim();
+  } catch(e){
+    console.error('OCR error', e);
+    return '';
+  }
 }
 
 async function cekJawaban(){
