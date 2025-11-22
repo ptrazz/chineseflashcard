@@ -3,378 +3,231 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Tebak Hanzi — OCR.Space (Tanpa API Key)</title>
+<title>Tebak Hanzi — Penilaian Mandiri</title>
 <style>
- body{font-family:system-ui,Segoe UI,Roboto,Arial;background:#0d1117;color:#eee;margin:0;padding:20px;text-align:center}
- .card{max-width:720px;margin:auto;background:#161b22;padding:20px;border-radius:12px;box-shadow:0 6px 30px #0008}
- button{padding:10px 16px;border-radius:8px;border:none;margin:6px;font-size:15px;background:#238636;color:white;cursor:pointer}
- #hanziPad{width:100%;height:340px;background:white;border-radius:10px;border:2px solid #555;display:block}
- .jawaban{font-size:48px;margin:15px 0;color:#4ad86e;min-height:1.2em}
- .small{font-size:14px;color:#cfd8dc}
- .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
- .notice{margin:10px 0;padding:10px;border-radius:8px}
+ body{font-family:system-ui;background:#0d1117;color:#eee;margin:0;padding:20px;text-align:center}
+ .card{max-width:500px;margin:auto;background:#161b22;padding:20px;border-radius:14px;box-shadow:0 0 20px #0007}
+ button{padding:10px 18px;border-radius:8px;border:none;margin:5px;font-size:16px;cursor:pointer;transition:transform 0.1s}
+ button:active{transform:scale(.96)}
+ button:disabled{cursor:not-allowed} 
+ /* Styles for specific action buttons */
+ #btnBenar { background:#238636; color:white; }
+ #btnSalah { background:#db3939; color:white; }
+ #btnShowAnswer { background:#30436d; color:white; }
+ #hanziPad{width:100%;height:300px;background:white;border-radius:12px;border:2px solid #555;touch-action:none}
+ .jawaban{font-size:48px;margin:15px 0;color:#4ad86e}
+ .progress{width:100%;height:10px;background:#333;border-radius:6px;overflow:hidden;margin-top:10px}
+ .bar{height:100%;width:0;background:#238636;transition:width 0.3s} 
+
+ /* Container untuk tombol penilaian */
+ .assessment-buttons {
+     display: flex;
+     justify-content: center;
+     gap: 10px;
+     margin-top: 15px;
+ }
+ .assessment-buttons button {
+     width: 48%; /* Agar tombol memakan hampir setengah lebar */
+ }
 </style>
 </head>
 <body>
-<h1>Tebak Hanzi</h1>
+<h1>Tebak Hanzi — Penilaian Mandiri</h1>
 <div class="card">
- <div id="pinyin" style="font-size:20px;margin-bottom:6px"></div>
- <div id="artiInggris" style="margin-bottom:10px" class="small"></div>
-
- <h3>Gambar Hanzi:</h3>
- <canvas id="hanziPad"></canvas>
- <div class="row" style="margin-top:8px">
-   <button onclick="clearPad()">Hapus</button>
-   <button onclick="cekJawaban()">Cek Jawaban (OCR.Space)</button>
-   <button onclick="showAnswer()">Tampilkan Jawaban</button>
-   <button onclick="loadSample()">Load Sample</button>
+ <div id="showPinyin" style="font-size:32px;color:#7ff9a1;margin-bottom:4px"></div>
+ <div id="showEnglish" style="font-size:20px;color:#cbd5e1;margin-bottom:14px"></div>
+ 
+ <div class="progress">
+     <div id="bar" class="bar"></div>
  </div>
 
- <div id="notif" class="notice small" style="color:yellow"></div>
+ <div style="margin: 15px 0;">
+    <span id="progressText" style="font-size:14px; color:#aaa;">0/20 selesai</span>
+ </div>
+ 
+ <h3>Gambar Hanzi:</h3>
+ <canvas id="hanziPad"></canvas>
+
+ <br>
+ <button onclick="clearPad()">Hapus Gambar</button>
+ <button id="btnShowAnswer" onclick="showAnswer()">Tampilkan Jawaban</button>
+ 
+ <div id="notif" style="margin:10px 0 20px; color:#ddd"></div>
+ 
  <div id="jawaban" class="jawaban"></div>
 
- <div style="margin-top:18px">
-   <button onclick="prevCard()">Previous</button>
-   <button onclick="nextCard()">Next</button>
+ <div class="assessment-buttons">
+    <button id="btnBenar" onclick="processAnswer(true)">✅ Benar</button>
+    <button id="btnSalah" onclick="processAnswer(false)">❌ Salah</button>
+ </div>
+ 
+ <div style="margin-top:20px">
+   <button onclick="prevCard()">Kembali</button>
+   <button onclick="nextCard()">Lanjut</button>
  </div>
 </div>
 
-<!-- Signature Pad -->
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
-
 <script>
-// ===================== DATA 150 KOSAKATA (potongan) =====================
-let data = [
- {hanzi:"八", pinyin:"bā", eng:"eight"},
-{hanzi:"爸爸", pinyin:"bàba", eng:"father"},
-{hanzi:"杯子", pinyin:"bēizi", eng:"cup, glass"},
-{hanzi:"北京", pinyin:"Běijīng", eng:"Beijing"},
-{hanzi:"本", pinyin:"běn", eng:"measure word for books"},
-{hanzi:"不", pinyin:"bù", eng:"not, no"},
-{hanzi:"不客气", pinyin:"bú kèqi", eng:"you’re welcome"},
-{hanzi:"菜", pinyin:"cài", eng:"dish, vegetable"},
-{hanzi:"茶", pinyin:"chá", eng:"tea"},
-{hanzi:"吃", pinyin:"chī", eng:"to eat"},
-{hanzi:"出租车", pinyin:"chūzūchē", eng:"taxi"},
-{hanzi:"打电话", pinyin:"dǎ diànhuà", eng:"to make a phone call"},
-{hanzi:"大", pinyin:"dà", eng:"big"},
-{hanzi:"的", pinyin:"de", eng:"possessive particle"},
-{hanzi:"点", pinyin:"diǎn", eng:"o’clock"},
-{hanzi:"电脑", pinyin:"diànnǎo", eng:"computer"},
-{hanzi:"电视", pinyin:"diànshì", eng:"television"},
-{hanzi:"电影", pinyin:"diànyǐng", eng:"movie"},
-{hanzi:"东西", pinyin:"dōngxi", eng:"thing, object"},
-{hanzi:"都", pinyin:"dōu", eng:"all, both"},
-{hanzi:"读", pinyin:"dú", eng:"to read"},
-{hanzi:"对不起", pinyin:"duìbuqǐ", eng:"sorry"},
-{hanzi:"多", pinyin:"duō", eng:"many, much"},
-{hanzi:"多少", pinyin:"duōshao", eng:"how many, how much"},
-{hanzi:"儿子", pinyin:"érzi", eng:"son"},
-{hanzi:"二", pinyin:"èr", eng:"two"},
-{hanzi:"饭店", pinyin:"fàndiàn", eng:"restaurant, hotel"},
-{hanzi:"飞机", pinyin:"fēijī", eng:"airplane"},
-{hanzi:"分钟", pinyin:"fēnzhōng", eng:"minute"},
-{hanzi:"高兴", pinyin:"gāoxìng", eng:"happy"},
-{hanzi:"个", pinyin:"gè", eng:"measure word"},
-{hanzi:"工作", pinyin:"gōngzuò", eng:"to work; job"},
-{hanzi:"狗", pinyin:"gǒu", eng:"dog"},
-{hanzi:"汉语", pinyin:"Hànyǔ", eng:"Chinese language"},
-{hanzi:"好", pinyin:"hǎo", eng:"good"},
-{hanzi:"喝", pinyin:"hē", eng:"to drink"},
-{hanzi:"和", pinyin:"hé", eng:"and"},
-{hanzi:"很", pinyin:"hěn", eng:"very"},
-{hanzi:"后面", pinyin:"hòumian", eng:"behind"},
-{hanzi:"回", pinyin:"huí", eng:"to return"},
-{hanzi:"会", pinyin:"huì", eng:"can, be able to"},
-{hanzi:"几", pinyin:"jǐ", eng:"how many"},
-{hanzi:"家", pinyin:"jiā", eng:"home, family"},
-{hanzi:"叫", pinyin:"jiào", eng:"to be called"},
-{hanzi:"今天", pinyin:"jīntiān", eng:"today"},
-{hanzi:"九", pinyin:"jiǔ", eng:"nine"},
-{hanzi:"开", pinyin:"kāi", eng:"to open; to drive"},
-{hanzi:"看", pinyin:"kàn", eng:"to see, to watch"},
-{hanzi:"看见", pinyin:"kànjiàn", eng:"to see"},
-{hanzi:"块", pinyin:"kuài", eng:"piece; RMB yuan"},
-{hanzi:"来", pinyin:"lái", eng:"to come"},
-{hanzi:"老师", pinyin:"lǎoshī", eng:"teacher"},
-{hanzi:"了", pinyin:"le", eng:"particle indicating change"},
-{hanzi:"冷", pinyin:"lěng", eng:"cold"},
-{hanzi:"里", pinyin:"lǐ", eng:"inside"},
-{hanzi:"六", pinyin:"liù", eng:"six"},
-{hanzi:"妈妈", pinyin:"māma", eng:"mother"},
-{hanzi:"吗", pinyin:"ma", eng:"question particle"},
-{hanzi:"买", pinyin:"mǎi", eng:"to buy"},
-{hanzi:"猫", pinyin:"māo", eng:"cat"},
-{hanzi:"没", pinyin:"méi", eng:"not (have)"},
-{hanzi:"没关系", pinyin:"méi guānxi", eng:"it’s okay"},
-{hanzi:"米饭", pinyin:"mǐfàn", eng:"rice"},
-{hanzi:"明天", pinyin:"míngtiān", eng:"tomorrow"},
-{hanzi:"名字", pinyin:"míngzi", eng:"name"},
-{hanzi:"哪", pinyin:"nǎ", eng:"which"},
-{hanzi:"哪儿", pinyin:"nǎr", eng:"where"},
-{hanzi:"那", pinyin:"nà", eng:"that"},
-{hanzi:"呢", pinyin:"ne", eng:"particle for questions"},
-{hanzi:"能", pinyin:"néng", eng:"can"},
-{hanzi:"你", pinyin:"nǐ", eng:"you"},
-{hanzi:"年", pinyin:"nián", eng:"year"},
-{hanzi:"女儿", pinyin:"nǚ’ér", eng:"daughter"},
-{hanzi:"朋友", pinyin:"péngyou", eng:"friend"},
-{hanzi:"漂亮", pinyin:"piàoliang", eng:"beautiful"},
-{hanzi:"苹果", pinyin:"píngguǒ", eng:"apple"},
-{hanzi:"七", pinyin:"qī", eng:"seven"},
-{hanzi:"钱", pinyin:"qián", eng:"money"},
-{hanzi:"前面", pinyin:"qiánmian", eng:"in front"},
-{hanzi:"请", pinyin:"qǐng", eng:"please"},
-{hanzi:"去", pinyin:"qù", eng:"to go"},
-{hanzi:"热", pinyin:"rè", eng:"hot"},
-{hanzi:"人", pinyin:"rén", eng:"person"},
-{hanzi:"认识", pinyin:"rènshi", eng:"to know"},
-{hanzi:"三", pinyin:"sān", eng:"three"},
-{hanzi:"上", pinyin:"shàng", eng:"up, on"},
-{hanzi:"上午", pinyin:"shàngwǔ", eng:"morning"},
-{hanzi:"少", pinyin:"shǎo", eng:"few, little"},
-{hanzi:"谁", pinyin:"shéi", eng:"who"},
-{hanzi:"什么", pinyin:"shénme", eng:"what"},
-{hanzi:"十", pinyin:"shí", eng:"ten"},
-{hanzi:"时候", pinyin:"shíhou", eng:"time"},
-{hanzi:"是", pinyin:"shì", eng:"to be"},
-{hanzi:"书", pinyin:"shū", eng:"book"},
-];
+let data = HSK1();
+// Menggunakan array of objects untuk melacak status dan jawaban pengguna
+let session = data.map((item, index) => ({ 
+    ...item, 
+    id: index, 
+    status: 'pending' // 'pending', 'correct', 'incorrect'
+}));
 
-// random order
-let order = [...Array(data.length).keys()].sort(()=>Math.random()-0.5);
-let index = 0;
+// Mengacak urutan yang hanya digunakan untuk iterasi, status tetap di `session`
+let order = [...Array(data.length).keys()].sort(()=>Math.random()-0.5); 
+let index = 0; // Index ke array 'order'
+let score = 0; // Total jawaban benar
 
-function tampilkan(){
- let item = data[order[index]];
- document.getElementById("pinyin").innerHTML = item.pinyin || "";
- document.getElementById("artiInggris").innerHTML = item.eng || "";
- document.getElementById("jawaban").innerHTML = "";
- document.getElementById("notif").innerHTML = "";
- clearPad();
-}
-
-function nextCard(){ if(index < order.length-1){ index++; tampilkan(); } }
-function prevCard(){ if(index > 0){ index--; tampilkan(); } }
-function showAnswer(){ document.getElementById("jawaban").innerHTML = data[order[index]].hanzi; }
-
-// ===================== SIGNATURE PAD =====================
 let canvas = document.getElementById('hanziPad');
 let signaturePad;
 
+// Storing DOM elements
+const showPinyinEl = document.getElementById('showPinyin');
+const showEnglishEl = document.getElementById('showEnglish');
+const jawabanEl = document.getElementById('jawaban');
+const notifEl = document.getElementById('notif');
+const barEl = document.getElementById('bar');
+const progressTextEl = document.getElementById('progressText');
+
+
+function HSK1(){
+ return [
+ {hanzi:"八", pinyin:"bā", eng:"eight"},
+ {hanzi:"爸爸", pinyin:"bàba", eng:"father"},
+ {hanzi:"杯子", pinyin:"bēizi", eng:"cup, glass"},
+ {hanzi:"北京", pinyin:"Běijīng", eng:"Beijing"},
+ {hanzi:"本", pinyin:"běn", eng:"measure word for books"},
+ {hanzi:"不", pinyin:"bù", eng:"not, no"},
+ {hanzi:"不客气", pinyin:"bú kèqi", eng:"you’re welcome"},
+ {hanzi:"菜", pinyin:"cài", eng:"dish, vegetable"},
+ {hanzi:"茶", pinyin:"chá", eng:"tea"},
+ {hanzi:"吃", pinyin:"chī", eng:"to eat"},
+ {hanzi:"出租车", pinyin:"chūzūchē", eng:"taxi"},
+ {hanzi:"打电话", pinyin:"dǎ diànhuà", eng:"to make a phone call"},
+ {hanzi:"大", pinyin:"dà", eng:"big"},
+ {hanzi:"的", pinyin:"de", eng:"possessive particle"},
+ {hanzi:"点", pinyin:"diǎn", eng:"o’clock"},
+ {hanzi:"电脑", pinyin:"diànnǎo", eng:"computer"},
+ {hanzi:"电视", pinyin:"diànshì", eng:"television"},
+ {hanzi:"电影", pinyin:"diànyǐng", eng:"movie"},
+ {hanzi:"东西", pinyin:"dōngxi", eng:"thing, object"},
+ {hanzi:"都", pinyin:"dōu", eng:"all"}
+ ];
+}
+
 function resizeCanvas(){
- const ratio = Math.max(window.devicePixelRatio || 1, 1);
- // keep css size, set actual pixels for high-DPI
- canvas.width = canvas.offsetWidth * ratio;
- canvas.height = canvas.offsetHeight * ratio;
+ const ratio = window.devicePixelRatio || 1;
+ canvas.width = canvas.clientWidth * ratio;
+ canvas.height = canvas.clientHeight * ratio;
  const ctx = canvas.getContext("2d");
  ctx.scale(ratio, ratio);
- // white background
- ctx.fillStyle = "#FFFFFF";
- ctx.fillRect(0,0,canvas.offsetWidth,canvas.offsetHeight);
+ if(signaturePad){ 
+    signaturePad._ctx = ctx; 
+    signaturePad.clear(); 
+ }
 }
 
-function initPad(){
+function init(){
  resizeCanvas();
- signaturePad = new SignaturePad(canvas, {backgroundColor:'rgba(255,255,255,1)',penColor:'black',minWidth:2,maxWidth:6});
- window.addEventListener('resize', ()=>{ // re-init on resize to keep crisp
-   const data = signaturePad.toData();
-   resizeCanvas();
-   signaturePad = new SignaturePad(canvas, {backgroundColor:'rgba(255,255,255,1)',penColor:'black',minWidth:2,maxWidth:6});
-   signaturePad.fromData(data);
- });
+ signaturePad = new SignaturePad(canvas,{backgroundColor:'white',penColor:'black'});
+ updateProgress();
+ tampilkan();
 }
 
-function clearPad(){ signaturePad.clear(); /* redraw white BG (SignaturePad might keep it) */ 
- const ctx = canvas.getContext('2d');
- ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0,0,canvas.offsetWidth,canvas.offsetHeight);
+window.onload = init;
+window.onresize = resizeCanvas;
+
+function tampilkan(){
+ let itemIndex = order[index];
+ let item = session[itemIndex];
+
+ showPinyinEl.textContent = item.pinyin;
+ showEnglishEl.textContent = item.eng;
+ jawabanEl.innerHTML = "";
+ notifEl.innerHTML = "";
+ clearPad();
+ 
+ // Menampilkan status sebelumnya (jika ada)
+ if (item.status === 'correct') {
+     notifEl.innerHTML = "<span style='color:#4ad86e'>Sudah dijawab dengan Benar!</span>";
+ } else if (item.status === 'incorrect') {
+     notifEl.innerHTML = "<span style='color:#ff5757'>Sudah dijawab dengan Salah. Coba lagi!</span>";
+ } else {
+     notifEl.innerHTML = "Silakan gambar Hanzi di atas.";
+ }
 }
 
-// ===================== PREPROCESSING helper =====================
-// Crop to bounding box, pad, resize to square, apply threshold to increase contrast
-async function preprocessDataURL(dataURL, outSize=1024) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => {
-      const tw = img.width, th = img.height;
-      const tmp = document.createElement('canvas');
-      tmp.width = tw; tmp.height = th;
-      const tctx = tmp.getContext('2d');
-      tctx.drawImage(img,0,0);
-      const id = tctx.getImageData(0,0,tw,th).data;
-
-      let minX = tw, minY = th, maxX = 0, maxY = 0;
-      for (let y=0;y<th;y++){
-        for (let x=0;x<tw;x++){
-          const i = (y*tw + x)*4;
-          if (!(id[i] > 240 && id[i+1] > 240 && id[i+2] > 240)){ // non-white
-            if (x < minX) minX = x;
-            if (y < minY) minY = y;
-            if (x > maxX) maxX = x;
-            if (y > maxY) maxY = y;
-          }
-        }
-      }
-      if (maxX < minX || maxY < minY) {
-        // empty drawing, return original resized
-        const out = document.createElement('canvas');
-        out.width = outSize; out.height = outSize;
-        const octx = out.getContext('2d');
-        octx.fillStyle = '#FFFFFF'; octx.fillRect(0,0,out.width,out.height);
-        // center original
-        const scale = Math.min(out.width/tw, out.height/th);
-        const dw = Math.round(tw*scale), dh = Math.round(th*scale);
-        octx.drawImage(img, 0, 0, tw, th, Math.round((out.width-dw)/2), Math.round((out.height-dh)/2), dw, dh);
-        resolve(out.toDataURL('image/png'));
-        return;
-      }
-
-      const pad = Math.round(Math.max((maxX-minX),(maxY-minY)) * 0.12) + 10;
-      minX = Math.max(0, minX - pad);
-      minY = Math.max(0, minY - pad);
-      maxX = Math.min(tw, maxX + pad);
-      maxY = Math.min(th, maxY + pad);
-
-      const w = maxX - minX, h = maxY - minY;
-      const out = document.createElement('canvas');
-      out.width = outSize; out.height = outSize;
-      const octx = out.getContext('2d');
-      octx.fillStyle = '#FFFFFF'; octx.fillRect(0,0,out.width,out.height);
-
-      const scale = Math.min(out.width / w, out.height / h);
-      const dw = Math.round(w * scale), dh = Math.round(h * scale);
-      const dx = Math.round((out.width - dw)/2), dy = Math.round((out.height - dh)/2);
-
-      octx.drawImage(img, minX, minY, w, h, dx, dy, dw, dh);
-
-      // convert to grayscale + threshold
-      const imgd = octx.getImageData(0,0,out.width,out.height);
-      const d = imgd.data;
-      for (let i=0;i<d.length;i+=4){
-        const gray = 0.299*d[i] + 0.587*d[i+1] + 0.114*d[i+2];
-        // adaptive-like simple threshold to preserve strokes
-        const t = gray < 200 ? 0 : 255;
-        d[i]=d[i+1]=d[i+2]=t;
-      }
-      octx.putImageData(imgd,0,0);
-      resolve(out.toDataURL('image/png'));
-    };
-    img.src = dataURL;
-  });
+function nextCard(){ 
+    if(index < order.length-1){ 
+        index++; 
+        tampilkan(); 
+    } else {
+        notifEl.innerHTML = "<span style='color:orange'>Semua kartu sudah selesai. Silakan kembali ke kartu sebelumnya.</span>";
+    }
 }
 
-// ===================== OCR (OCR.Space FREE, no API key) =====================
-async function ocrHanzi() {
-  // take image from signaturePad
-  const src = signaturePad.toDataURL("image/png");
-  document.getElementById("notif").innerHTML = "<span style='color:yellow'>Preprocessing gambar...</span>";
+function prevCard(){ 
+    if(index > 0){ 
+        index--; 
+        tampilkan(); 
+    } else {
+        notifEl.innerHTML = "<span style='color:orange'>Ini adalah kartu pertama.</span>";
+    }
+}
 
-  try {
-    // preprocess to crop+threshold
-    const pre = await preprocessDataURL(src, 1024);
-    document.getElementById("notif").innerHTML = "<span style='color:yellow'>Mengirim ke OCR.Space...</span>";
+function showAnswer(){ 
+    jawabanEl.innerHTML = session[order[index]].hanzi;
+    notifEl.innerHTML = "Ini adalah jawaban yang benar. Apakah gambarmu sudah mirip?";
+}
 
-    // OCR.Space accepts multipart/form-data with "base64Image" field
-    const form = new FormData();
-    // note: prefix required "data:image/png;base64,"
-    form.append("base64Image", pre);
-    form.append("language", "chs"); // "chs" = Chinese Simplified. Use "cht" for Traditional.
-    form.append("isOverlayRequired", "false");
-    // Optional: set OCREngine to 2 (newer) by adding &OCREngine=2 in URL, but here we'll use POST body only.
+function clearPad(){ signaturePad.clear(); }
 
-    const res = await fetch("https://api.ocr.space/parse/image", {
-      method: "POST",
-      body: form
-    });
-
-    const data = await res.json();
-    console.log("OCR.Space response:", data);
-
-    if (!data || !data.ParsedResults || data.ParsedResults.length === 0) {
-      return "";
+// Fungsi untuk memperbarui status dan melanjutkan ke kartu berikutnya
+function processAnswer(isCorrect) {
+    let itemIndex = order[index];
+    let currentItem = session[itemIndex];
+    
+    // Hanya perbarui status jika sebelumnya belum pernah dijawab BENAR
+    if (currentItem.status !== 'correct') {
+        currentItem.status = isCorrect ? 'correct' : 'incorrect';
     }
 
-    // ParsedText may contain newlines/spaces; join/clean
-    const parsedText = data.ParsedResults.map(r => r.ParsedText || "").join("\n").trim();
-    return parsedText.replace(/\r/g,"").trim();
-  } catch (err) {
-    console.error("OCR error:", err);
-    return "";
-  }
+    if (isCorrect) {
+        notifEl.innerHTML = "<span style='color:#4ad86e'>Bagus! Lanjut ke kartu berikutnya.</span>";
+        jawabanEl.innerHTML = currentItem.hanzi;
+    } else {
+        notifEl.innerHTML = "<span style='color:#ff5757'>Oke. Pelajari lagi dan coba gambar ulang, atau lanjut ke kartu berikutnya.</span>";
+    }
+    
+    updateProgress();
+    
+    // Pindah ke kartu berikutnya setelah jeda singkat
+    setTimeout(nextCard, 1500);
 }
 
-// ===================== cekJawaban (tetap sama interface) =====================
-async function cekJawaban(){
- let target = data[order[index]].hanzi;
- document.getElementById("notif").innerHTML = "<span style='color:yellow'>Mengenali tulisan...</span>";
- let ocr = await ocrHanzi();
- console.log("OCR:", ocr);
-
- if (!ocr) {
-   document.getElementById("notif").innerHTML = "<span style='color:#ffcc00'>OCR tidak menghasilkan teks — coba ulang atau perjelas goresan.</span>";
-   return;
- }
-
- // simplify OCR and target for comparison: remove spaces/newlines
- const ocrClean = ocr.replace(/\s+/g,'');
- const targetClean = (target || "").replace(/\s+/g,'');
-
- if (ocrClean.includes(targetClean) || targetClean.includes(ocrClean)) {
-   document.getElementById("notif").innerHTML = "<span style='color:#4ad86e'>Jawaban Benar ✔ (OCR: "+escapeHtml(ocr)+")</span>";
- } else {
-   document.getElementById("notif").innerHTML = "<span style='color:#ff5757'>Salah ✘ (OCR: "+escapeHtml(ocr)+")</span>";
- }
+function updateProgress(){
+    let total = session.length;
+    let answered = session.filter(item => item.status !== 'pending').length;
+    let correctCount = session.filter(item => item.status === 'correct').length;
+    
+    let pct = (answered / total) * 100;
+    barEl.style.width = pct + "%";
+    
+    progressTextEl.textContent = `${correctCount}/${total} benar (${answered} selesai)`;
+    
+    // Perbarui warna progress bar berdasarkan persentase
+    if (pct < 50) {
+         barEl.style.backgroundColor = '#db3939'; // Merah
+    } else if (pct < 100) {
+         barEl.style.backgroundColor = '#ffc107'; // Kuning
+    } else {
+         barEl.style.backgroundColor = '#238636'; // Hijau
+    }
 }
-
-// utility escape
-function escapeHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-// ===================== Load sample (path dari file yang kamu upload) =====================
-// Developer-provided path: /mnt/data/69b0ce6a-5a69-4ef4-83c1-6c690e7c5022.png
-// When running locally, replace with appropriate URL or serve that file via HTTP server.
-async function loadSample(){
-  const url = "/mnt/data/69b0ce6a-5a69-4ef4-83c1-6c690e7c5022.png"; // <-- adjust if needed
-  document.getElementById("notif").innerHTML = "<span style='color:yellow'>Memuat sample...</span>";
-  try {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => {
-      // draw into canvas (fit)
-      const ctx = canvas.getContext('2d');
-      ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0,0,canvas.offsetWidth,canvas.offsetHeight);
-      // compute fit
-      const ar = img.width / img.height;
-      let dw = canvas.offsetWidth, dh = Math.round(dw / ar);
-      if (dh > canvas.offsetHeight) { dh = canvas.offsetHeight; dw = Math.round(dh * ar); }
-      const dx = Math.round((canvas.offsetWidth - dw)/2), dy = Math.round((canvas.offsetHeight - dh)/2);
-      ctx.drawImage(img, 0,0,img.width,img.height, dx, dy, dw, dh);
-
-      // set signaturePad data from canvas pixels: use toDataURL then fromData isn't directly available,
-      // so clear signaturePad (we already drew image on canvas)
-      signaturePad.clear(); // signaturePad thinks blank but visual has image; workaround: we will treat canvas pixels directly when OCR
-      document.getElementById("notif").innerHTML = "<span style='color:#4ad86e'>Sample dimuat. Tekan 'Cek Jawaban' untuk OCR.</span>";
-    };
-    img.onerror = (e)=> { throw new Error('Gagal memuat sample (cek path / CORS)'); };
-    img.src = url;
-  } catch (err) {
-    console.error(err);
-    document.getElementById("notif").innerHTML = "<span style='color:#ff5757'>Gagal memuat sample: "+err.message+"</span>";
-  }
-}
-
-// Overwrite signaturePad.toDataURL to capture either drawn strokes or the canvas image
-// (If user loaded sample by drawImage onto canvas, signaturePad.toDataURL may still return blank; so we read canvas directly)
-const originalToDataURL = () => canvas.toDataURL("image/png");
-
-// Replace signaturePad.toDataURL usage in ocrHanzi by reading canvas directly (already used canvas in ocrHanzi via signaturePad.toDataURL)
-SignaturePad.prototype._orig_toDataURL = SignaturePad.prototype.toDataURL;
-SignaturePad.prototype.toDataURL = function(type) {
-  // prefer reading raw visible canvas pixels (captures both signature and loaded sample)
-  return canvas.toDataURL(type || "image/png");
-};
-
-// ===================== bootstrap =====================
-window.onload = ()=>{ initPad(); tampilkan(); };
 </script>
 </body>
 </html>
