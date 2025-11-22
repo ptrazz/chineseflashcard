@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tebak Hanzi + OCR</title>
+<style>
+ body{font-family:system-ui;background:#0d1117;color:#eee;margin:0;padding:20px;text-align:center}
+ .card{max-width:500px;margin:auto;background:#161b22;padding:20px;border-radius:14px;box-shadow:0 0 20px #0007}
+ button{padding:10px 18px;border-radius:8px;border:none;margin:5px;font-size:16px;background:#238636;color:white}
+ #hanziPad{width:100%;height:300px;background:white;border-radius:12px;border:2px solid #555}
+ .jawaban{font-size:48px;margin:15px 0;color:#4ad86e}
+</style>
+</head>
+<body>
+<h1>Tebak Hanzi</h1>
+<div class="card">
+ <div id="pinyin" style="font-size:22px;margin-bottom:10px"></div>
+ <div id="artiInggris" style="margin-bottom:20px"></div>
+ 
+ <h3>Gambar Hanzi:</h3>
+ <canvas id="hanziPad"></canvas>
+ <br>
+ <button onclick="clearPad()">Hapus</button>
+ <button onclick="cekJawaban()">Cek Jawaban</button>
+ 
+ <div id="notif" style="margin:10px 0 20px"></div>
+ 
+ <button onclick="showAnswer()">Tampilkan Jawaban</button>
+ <div id="jawaban" class="jawaban"></div>
+ 
+ <div style="margin-top:20px">
+   <button onclick="prevCard()">Previous</button>
+   <button onclick="nextCard()">Next</button>
+ </div>
+</div>
+
+<!-- Signature Pad -->
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+<!-- OCR -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+<script>
+// ===================== DATA 150 KOSAKATA =====================
+let data = [
+ {hanzi:"八", pinyin:"bā", eng:"eight"},
+{hanzi:"爸爸", pinyin:"bàba", eng:"father"},
+{hanzi:"杯子", pinyin:"bēizi", eng:"cup, glass"},
+{hanzi:"北京", pinyin:"Běijīng", eng:"Beijing"},
+{hanzi:"本", pinyin:"běn", eng:"measure word for books"},
+{hanzi:"不", pinyin:"bù", eng:"not, no"},
+{hanzi:"不客气", pinyin:"bú kèqi", eng:"you’re welcome"},
+{hanzi:"菜", pinyin:"cài", eng:"dish, vegetable"},
+{hanzi:"茶", pinyin:"chá", eng:"tea"},
+{hanzi:"吃", pinyin:"chī", eng:"to eat"},
+{hanzi:"出租车", pinyin:"chūzūchē", eng:"taxi"},
+{hanzi:"打电话", pinyin:"dǎ diànhuà", eng:"to make a phone call"},
+{hanzi:"大", pinyin:"dà", eng:"big"},
+{hanzi:"的", pinyin:"de", eng:"possessive particle"},
+{hanzi:"点", pinyin:"diǎn", eng:"o’clock"},
+{hanzi:"电脑", pinyin:"diànnǎo", eng:"computer"},
+{hanzi:"电视", pinyin:"diànshì", eng:"television"},
+{hanzi:"电影", pinyin:"diànyǐng", eng:"movie"},
+{hanzi:"东西", pinyin:"dōngxi", eng:"thing, object"},
+{hanzi:"都", pinyin:"dōu", eng:"all, both"},
+{hanzi:"读", pinyin:"dú", eng:"to read"},
+{hanzi:"对不起", pinyin:"duìbuqǐ", eng:"sorry"},
+{hanzi:"多", pinyin:"duō", eng:"many, much"},
+{hanzi:"多少", pinyin:"duōshao", eng:"how many, how much"},
+{hanzi:"儿子", pinyin:"érzi", eng:"son"},
+{hanzi:"二", pinyin:"èr", eng:"two"},
+{hanzi:"饭店", pinyin:"fàndiàn", eng:"restaurant, hotel"},
+{hanzi:"飞机", pinyin:"fēijī", eng:"airplane"},
+{hanzi:"分钟", pinyin:"fēnzhōng", eng:"minute"},
+{hanzi:"高兴", pinyin:"gāoxìng", eng:"happy"},
+{hanzi:"个", pinyin:"gè", eng:"measure word"},
+{hanzi:"工作", pinyin:"gōngzuò", eng:"to work; job"},
+{hanzi:"狗", pinyin:"gǒu", eng:"dog"},
+{hanzi:"汉语", pinyin:"Hànyǔ", eng:"Chinese language"},
+{hanzi:"好", pinyin:"hǎo", eng:"good"},
+{hanzi:"喝", pinyin:"hē", eng:"to drink"},
+{hanzi:"和", pinyin:"hé", eng:"and"},
+{hanzi:"很", pinyin:"hěn", eng:"very"},
+{hanzi:"后面", pinyin:"hòumian", eng:"behind"},
+{hanzi:"回", pinyin:"huí", eng:"to return"},
+{hanzi:"会", pinyin:"huì", eng:"can, be able to"},
+{hanzi:"几", pinyin:"jǐ", eng:"how many"},
+{hanzi:"家", pinyin:"jiā", eng:"home, family"},
+{hanzi:"叫", pinyin:"jiào", eng:"to be called"},
+{hanzi:"今天", pinyin:"jīntiān", eng:"today"},
+{hanzi:"九", pinyin:"jiǔ", eng:"nine"},
+{hanzi:"开", pinyin:"kāi", eng:"to open; to drive"},
+{hanzi:"看", pinyin:"kàn", eng:"to see, to watch"},
+{hanzi:"看见", pinyin:"kànjiàn", eng:"to see"},
+{hanzi:"块", pinyin:"kuài", eng:"piece; RMB yuan"},
+{hanzi:"来", pinyin:"lái", eng:"to come"},
+{hanzi:"老师", pinyin:"lǎoshī", eng:"teacher"},
+{hanzi:"了", pinyin:"le", eng:"particle indicating change"},
+{hanzi:"冷", pinyin:"lěng", eng:"cold"},
+{hanzi:"里", pinyin:"lǐ", eng:"inside"},
+{hanzi:"六", pinyin:"liù", eng:"six"},
+{hanzi:"妈妈", pinyin:"māma", eng:"mother"},
+{hanzi:"吗", pinyin:"ma", eng:"question particle"},
+{hanzi:"买", pinyin:"mǎi", eng:"to buy"},
+{hanzi:"猫", pinyin:"māo", eng:"cat"},
+{hanzi:"没", pinyin:"méi", eng:"not (have)"},
+{hanzi:"没关系", pinyin:"méi guānxi", eng:"it’s okay"},
+{hanzi:"米饭", pinyin:"mǐfàn", eng:"rice"},
+{hanzi:"明天", pinyin:"míngtiān", eng:"tomorrow"},
+{hanzi:"名字", pinyin:"míngzi", eng:"name"},
+{hanzi:"哪", pinyin:"nǎ", eng:"which"},
+{hanzi:"哪儿", pinyin:"nǎr", eng:"where"},
+{hanzi:"那", pinyin:"nà", eng:"that"},
+{hanzi:"呢", pinyin:"ne", eng:"particle for questions"},
+{hanzi:"能", pinyin:"néng", eng:"can"},
+{hanzi:"你", pinyin:"nǐ", eng:"you"},
+{hanzi:"年", pinyin:"nián", eng:"year"},
+{hanzi:"女儿", pinyin:"nǚ’ér", eng:"daughter"},
+{hanzi:"朋友", pinyin:"péngyou", eng:"friend"},
+{hanzi:"漂亮", pinyin:"piàoliang", eng:"beautiful"},
+{hanzi:"苹果", pinyin:"píngguǒ", eng:"apple"},
+{hanzi:"七", pinyin:"qī", eng:"seven"},
+{hanzi:"钱", pinyin:"qián", eng:"money"},
+{hanzi:"前面", pinyin:"qiánmian", eng:"in front"},
+{hanzi:"请", pinyin:"qǐng", eng:"please"},
+{hanzi:"去", pinyin:"qù", eng:"to go"},
+{hanzi:"热", pinyin:"rè", eng:"hot"},
+{hanzi:"人", pinyin:"rén", eng:"person"},
+{hanzi:"认识", pinyin:"rènshi", eng:"to know"},
+{hanzi:"三", pinyin:"sān", eng:"three"},
+{hanzi:"上", pinyin:"shàng", eng:"up, on"},
+{hanzi:"上午", pinyin:"shàngwǔ", eng:"morning"},
+{hanzi:"少", pinyin:"shǎo", eng:"few, little"},
+{hanzi:"谁", pinyin:"shéi", eng:"who"},
+{hanzi:"什么", pinyin:"shénme", eng:"what"},
+{hanzi:"十", pinyin:"shí", eng:"ten"},
+{hanzi:"时候", pinyin:"shíhou", eng:"time"},
+{hanzi:"是", pinyin:"shì", eng:"to be"},
+{hanzi:"书", pinyin:"shū", eng:"book"},
+];
+
+// ===================== ORDER SYSTEM =====================
+let order = [...Array(data.length).keys()].sort(()=>Math.random()-0.5);
+let index = 0;
+
+function tampilkan(){
+ let item = data[order[index]];
+ document.getElementById("pinyin").innerHTML = item.pinyin;
+ document.getElementById("artiInggris").innerHTML = item.eng;
+ document.getElementById("jawaban").innerHTML = "";
+ document.getElementById("notif").innerHTML = "";
+ clearPad();
+}
+
+function nextCard(){ if(index < order.length-1){ index++; tampilkan(); } }
+function prevCard(){ if(index > 0){ index--; tampilkan(); } }
+function showAnswer(){ document.getElementById("jawaban").innerHTML = data[order[index]].hanzi; }
+
+// ===================== SIGNATURE PAD =====================
+let canvas = document.getElementById('hanziPad');
+let signaturePad;
+
+function resizeCanvas(){
+ const ratio = Math.max(window.devicePixelRatio || 1, 1);
+ canvas.width = canvas.offsetWidth * ratio;
+ canvas.height = canvas.offsetHeight * ratio;
+ canvas.getContext("2d").scale(ratio, ratio);
+}
+
+function initPad(){
+ resizeCanvas();
+ signaturePad = new SignaturePad(canvas, {backgroundColor:'white',penColor:'black'});
+}
+
+function clearPad(){ signaturePad.clear(); }
+
+// ===================== OCR =====================
+async function ocrHanzi(){
+ const image = signaturePad.toDataURL();
+ document.getElementById("notif").innerHTML = "<span style='color:yellow'>Mengenali tulisan...</span>";
+
+ const worker = await Tesseract.createWorker("chi_sim");
+ const result = await worker.recognize(image);
+ await worker.terminate();
+
+ return result.data.text.trim();
+}
+
+async function cekJawaban(){
+ let target = data[order[index]].hanzi;
+ let ocr = await ocrHanzi();
+ console.log("OCR:", ocr);
+
+ if(ocr.includes(target)){
+   document.getElementById("notif").innerHTML = "<span style='color:#4ad86e'>Jawaban Benar ✔</span>";
+ }else{
+   document.getElementById("notif").innerHTML = "<span style='color:#ff5757'>Salah ✘ (OCR: "+ocr+")</span>";
+ }
+}
+
+window.onload = ()=>{ initPad(); tampilkan(); };
+</script>
+</body>
+</html>
