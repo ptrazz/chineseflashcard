@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tebak Pinyin — Bab 9: Pemasaran / Marketing</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #fff5f0, #f8f0ff, #f0f5ff);
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .container {
+      background: white;
+      border-radius: 14px;
+      padding: 24px;
+      width: 100%;
+      max-width: 560px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      border: 1px solid #f0e0e6;
+    }
+    h1 {
+      font-size: 22px;
+      margin: 0 0 16px;
+      text-align: center;
+      color: #a66a7a;
+      font-weight: 600;
+    }
+    .checkbox-container {
+      text-align: center;
+      margin-bottom: 18px;
+      font-size: 14px;
+      color: #5a5a5a;
+    }
+    .word-display {
+      font-size: 56px;
+      text-align: center;
+      margin: 16px 0;
+      color: #333;
+      font-family: "Noto Sans SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.3;
+    }
+    .meaning-display {
+      font-size: 16px;
+      text-align: center;
+      margin: 8px 0 20px;
+      color: #a67a8a;
+      font-style: italic;
+    }
+    .pinyin-display {
+      font-size: 19px;
+      text-align: center;
+      margin: 10px 0;
+      color: #c67a8a;
+      font-weight: 600;
+      opacity: 0;
+    }
+    .btn {
+      background-color: #ffe0e6;
+      color: #a65a6a;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 18px;
+      margin: 6px;
+      font-size: 15px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn:disabled {
+      background-color: #fff0f2;
+      color: #c0a0a8;
+      cursor: not-allowed;
+    }
+    .navigation {
+      text-align: center;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Tebak Pinyin — Bab 9: Pemasaran / Marketing</h1>
+    <div class="checkbox-container">
+      <label>
+        <input type="checkbox" id="randomOrder"> Acak urutan
+      </label>
+    </div>
+    <div class="word-display" id="wordDisplay">加载中...</div>
+    <div class="meaning-display" id="meaningDisplay">Memuat arti...</div>
+    <div class="pinyin-display" id="pinyinDisplay">yíngxiāo</div>
+    <div style="text-align: center;">
+      <button class="btn" id="showPinyinBtn">Show Pinyin</button>
+    </div>
+    <div class="navigation">
+      <button class="btn" id="prevBtn">Previous</button>
+      <button class="btn" id="nextBtn">Next</button>
+    </div>
+  </div>
+
+  <script>
+    const vocabData = [
+      { word: "营销", pinyin: "yíngxiāo", meaning: "pemasaran" },
+      { word: "市场", pinyin: "shìchǎng", meaning: "pasar" },
+      { word: "客户", pinyin: "kèhù", meaning: "pelanggan" },
+      { word: "消费者", pinyin: "xiāofèizhě", meaning: "konsumen" },
+      { word: "品牌", pinyin: "pǐnpái", meaning: "merek" },
+      { word: "广告", pinyin: "guǎnggào", meaning: "iklan" },
+      { word: "宣传", pinyin: "xuānchuán", meaning: "promosi" },
+      { word: "推广", pinyin: "tuīguǎng", meaning: "promosi / memperluas jangkauan" },
+      { word: "销售", pinyin: "xiāoshòu", meaning: "penjualan" },
+      { word: "促销", pinyin: "cùxiāo", meaning: "diskon / promosi penjualan" },
+      { word: "打折", pinyin: "dǎzhé", meaning: "potongan harga" },
+      { word: "折扣", pinyin: "zhékòu", meaning: "diskon" },
+      { word: "产品", pinyin: "chǎnpǐn", meaning: "produk" },
+      { word: "服务", pinyin: "fúwù", meaning: "layanan" },
+      { word: "口碑", pinyin: "kǒubēi", meaning: "reputasi mulut ke mulut" },
+      { word: "调研", pinyin: "diàoyán", meaning: "survei / riset" },
+      { word: "目标客户", pinyin: "mùbiāo kèhù", meaning: "target pelanggan" },
+      { word: "营销策略", pinyin: "yíngxiāo cèlüè", meaning: "strategi pemasaran" },
+      { word: "社交媒体", pinyin: "shèjiāo méitǐ", meaning: "media sosial" },
+      { word: "网红", pinyin: "wǎnghóng", meaning: "influencer" },
+      { word: "直播", pinyin: "zhíbō", meaning: "live streaming" },
+      { word: "电商平台", pinyin: "diànshāng píngtái", meaning: "platform e-commerce" },
+      { word: "转化率", pinyin: "zhuǎnhuà lǜ", meaning: "tingkat konversi" },
+      { word: "点击率", pinyin: "diǎnjī lǜ", meaning: "tingkat klik (CTR)" },
+      { word: "客户忠诚度", pinyin: "kèhù zhōngchéng dù", meaning: "loyalitas pelanggan" }
+    ];
+
+    let currentIndex = 0;
+    let shuffledIndices = [];
+
+    const wordDisplay = document.getElementById('wordDisplay');
+    const meaningDisplay = document.getElementById('meaningDisplay');
+    const pinyinDisplay = document.getElementById('pinyinDisplay');
+    const showPinyinBtn = document.getElementById('showPinyinBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const randomOrderCheckbox = document.getElementById('randomOrder');
+
+    function shuffleArray(arr) {
+      return [...arr].sort(() => Math.random() - 0.5);
+    }
+
+    function updateDisplay() {
+      const index = randomOrderCheckbox.checked 
+        ? shuffledIndices[currentIndex] 
+        : currentIndex;
+      const item = vocabData[index];
+      wordDisplay.textContent = item.word;
+      meaningDisplay.textContent = item.meaning;
+      pinyinDisplay.textContent = item.pinyin;
+      pinyinDisplay.style.opacity = '0';
+      showPinyinBtn.disabled = false;
+      prevBtn.disabled = currentIndex === 0;
+      nextBtn.disabled = currentIndex === vocabData.length - 1;
+    }
+
+    showPinyinBtn.onclick = function() {
+      pinyinDisplay.style.opacity = '1';
+      showPinyinBtn.disabled = true;
+    };
+
+    prevBtn.onclick = function() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateDisplay();
+      }
+    };
+
+    nextBtn.onclick = function() {
+      if (currentIndex < vocabData.length - 1) {
+        currentIndex++;
+        updateDisplay();
+      }
+    };
+
+    randomOrderCheckbox.onchange = function() {
+      if (randomOrderCheckbox.checked) {
+        shuffledIndices = shuffleArray([...Array(vocabData.length).keys()]);
+      } else {
+        shuffledIndices = [];
+      }
+      currentIndex = 0;
+      updateDisplay();
+    };
+
+    updateDisplay();
+  </script>
+</body>
+</html>

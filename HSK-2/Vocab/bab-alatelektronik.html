@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tebak Pinyin — Bab 7: Alat Elektronik</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f0f8ff, #f0fff8, #f8f0ff);
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .container {
+      background: white;
+      border-radius: 14px;
+      padding: 24px;
+      width: 100%;
+      max-width: 560px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      border: 1px solid #e0e8f0;
+    }
+    h1 {
+      font-size: 22px;
+      margin: 0 0 16px;
+      text-align: center;
+      color: #5a7aa6;
+      font-weight: 600;
+    }
+    .checkbox-container {
+      text-align: center;
+      margin-bottom: 18px;
+      font-size: 14px;
+      color: #5a5a5a;
+    }
+    .word-display {
+      font-size: 56px;
+      text-align: center;
+      margin: 16px 0;
+      color: #333;
+      font-family: "Noto Sans SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.3;
+    }
+    .meaning-display {
+      font-size: 16px;
+      text-align: center;
+      margin: 8px 0 20px;
+      color: #6a8a9a;
+      font-style: italic;
+    }
+    .pinyin-display {
+      font-size: 19px;
+      text-align: center;
+      margin: 10px 0;
+      color: #7a9ab6;
+      font-weight: 600;
+      opacity: 0;
+    }
+    .btn {
+      background-color: #e0ecff;
+      color: #5a7a9a;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 18px;
+      margin: 6px;
+      font-size: 15px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn:disabled {
+      background-color: #f0f5ff;
+      color: #a0a0b0;
+      cursor: not-allowed;
+    }
+    .navigation {
+      text-align: center;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Tebak Pinyin — Bab 7: Alat Elektronik</h1>
+    <div class="checkbox-container">
+      <label>
+        <input type="checkbox" id="randomOrder"> Acak urutan
+      </label>
+    </div>
+    <div class="word-display" id="wordDisplay">加载中...</div>
+    <div class="meaning-display" id="meaningDisplay">Memuat arti...</div>
+    <div class="pinyin-display" id="pinyinDisplay">diànnǎo</div>
+    <div style="text-align: center;">
+      <button class="btn" id="showPinyinBtn">Show Pinyin</button>
+    </div>
+    <div class="navigation">
+      <button class="btn" id="prevBtn">Previous</button>
+      <button class="btn" id="nextBtn">Next</button>
+    </div>
+  </div>
+
+  <script>
+    const vocabData = [
+      { word: "电脑", pinyin: "diànnǎo", meaning: "komputer" },
+      { word: "笔记本电脑", pinyin: "bǐjìběn diànnǎo", meaning: "laptop" },
+      { word: "手机", pinyin: "shǒujī", meaning: "ponsel" },
+      { word: "智能手机", pinyin: "zhìnéng shǒujī", meaning: "smartphone" },
+      { word: "平板电脑", pinyin: "píngbǎn diànnǎo", meaning: "tablet" },
+      { word: "电视机", pinyin: "diànshìjī", meaning: "televisi" },
+      { word: "显示器", pinyin: "xiǎnshìqì", meaning: "monitor" },
+      { word: "键盘", pinyin: "jiànpán", meaning: "keyboard" },
+      { word: "鼠标", pinyin: "shǔbiāo", meaning: "mouse" },
+      { word: "耳机", pinyin: "ěrjī", meaning: "headphone" },
+      { word: "扬声器", pinyin: "yángshēngqì", meaning: "speaker" },
+      { word: "麦克风", pinyin: "màikèfēng", meaning: "microphone" },
+      { word: "打印机", pinyin: "dǎyìnjī", meaning: "printer" },
+      { word: "扫描仪", pinyin: "sǎomiáoyí", meaning: "scanner" },
+      { word: "路由器", pinyin: "lùyóuqì", meaning: "router" },
+      { word: "调制解调器", pinyin: "tiáozhì jiětiáoqì", meaning: "modem" },
+      { word: "充电器", pinyin: "chōngdiànqì", meaning: "charger" },
+      { word: "电池", pinyin: "diànchí", meaning: "baterai" },
+      { word: "电源", pinyin: "diànyuán", meaning: "sumber listrik / power supply" },
+      { word: "摄像头", pinyin: "shèxiàngtóu", meaning: "kamera" },
+      { word: "投影仪", pinyin: "tóuyǐngyí", meaning: "proyektor" },
+      { word: "游戏机", pinyin: "yóuxìjī", meaning: "konsol game" },
+      { word: "遥控器", pinyin: "yáokòngqì", meaning: "remote control" },
+      { word: "电灯", pinyin: "diàndēng", meaning: "lampu listrik" },
+      { word: "冰箱", pinyin: "bīngxiāng", meaning: "kulkas" },
+      { word: "微波炉", pinyin: "wēibōlú", meaning: "microwave" },
+      { word: "洗衣机", pinyin: "xǐyījī", meaning: "mesin cuci" },
+      { word: "空调", pinyin: "kōngtiáo", meaning: "AC (pendingin udara)" },
+      { word: "电风扇", pinyin: "diànfēngshàn", meaning: "kipas angin" },
+      { word: "电饭煲", pinyin: "diànfànbāo", meaning: "rice cooker" }
+    ];
+
+    let currentIndex = 0;
+    let shuffledIndices = [];
+
+    const wordDisplay = document.getElementById('wordDisplay');
+    const meaningDisplay = document.getElementById('meaningDisplay');
+    const pinyinDisplay = document.getElementById('pinyinDisplay');
+    const showPinyinBtn = document.getElementById('showPinyinBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const randomOrderCheckbox = document.getElementById('randomOrder');
+
+    function shuffleArray(arr) {
+      return [...arr].sort(() => Math.random() - 0.5);
+    }
+
+    function updateDisplay() {
+      const index = randomOrderCheckbox.checked 
+        ? shuffledIndices[currentIndex] 
+        : currentIndex;
+      const item = vocabData[index];
+      wordDisplay.textContent = item.word;
+      meaningDisplay.textContent = item.meaning;
+      pinyinDisplay.textContent = item.pinyin;
+      pinyinDisplay.style.opacity = '0';
+      showPinyinBtn.disabled = false;
+      prevBtn.disabled = currentIndex === 0;
+      nextBtn.disabled = currentIndex === vocabData.length - 1;
+    }
+
+    showPinyinBtn.onclick = function() {
+      pinyinDisplay.style.opacity = '1';
+      showPinyinBtn.disabled = true;
+    };
+
+    prevBtn.onclick = function() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateDisplay();
+      }
+    };
+
+    nextBtn.onclick = function() {
+      if (currentIndex < vocabData.length - 1) {
+        currentIndex++;
+        updateDisplay();
+      }
+    };
+
+    randomOrderCheckbox.onchange = function() {
+      if (randomOrderCheckbox.checked) {
+        shuffledIndices = shuffleArray([...Array(vocabData.length).keys()]);
+      } else {
+        shuffledIndices = [];
+      }
+      currentIndex = 0;
+      updateDisplay();
+    };
+
+    updateDisplay();
+  </script>
+</body>
+</html>

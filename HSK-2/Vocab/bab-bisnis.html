@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tebak Pinyin — Bab 2: Bisnis</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f0f9ff, #fff5f7, #f8f0ff);
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .container {
+      background: white;
+      border-radius: 14px;
+      padding: 24px;
+      width: 100%;
+      max-width: 540px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      border: 1px solid #e6e6f0;
+    }
+    h1 {
+      font-size: 22px;
+      margin: 0 0 16px;
+      text-align: center;
+      color: #5a7ca0;
+      font-weight: 600;
+    }
+    .checkbox-container {
+      text-align: center;
+      margin-bottom: 18px;
+      font-size: 14px;
+      color: #5a5a5a;
+    }
+    .word-display {
+      font-size: 60px;
+      text-align: center;
+      margin: 16px 0;
+      color: #333;
+      font-family: "Noto Sans SC", "Microsoft YaHei", sans-serif;
+    }
+    .meaning-display {
+      font-size: 16px;
+      text-align: center;
+      margin: 8px 0 20px;
+      color: #6a7a9a;
+      font-style: italic;
+    }
+    .pinyin-display {
+      font-size: 20px;
+      text-align: center;
+      margin: 10px 0;
+      color: #8a6ba6;
+      font-weight: 600;
+      opacity: 0;
+    }
+    .btn {
+      background-color: #e0ecff;
+      color: #4a6a9a;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 18px;
+      margin: 6px;
+      font-size: 15px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn:disabled {
+      background-color: #f0f5ff;
+      color: #a0a0b0;
+      cursor: not-allowed;
+    }
+    .navigation {
+      text-align: center;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Tebak Pinyin — Bab 2: Bisnis</h1>
+    <div class="checkbox-container">
+      <label>
+        <input type="checkbox" id="randomOrder"> Acak urutan
+      </label>
+    </div>
+    <div class="word-display" id="wordDisplay">加载中...</div>
+    <div class="meaning-display" id="meaningDisplay">Memuat arti...</div>
+    <div class="pinyin-display" id="pinyinDisplay">shāngyè</div>
+    <div style="text-align: center;">
+      <button class="btn" id="showPinyinBtn">Show Pinyin</button>
+    </div>
+    <div class="navigation">
+      <button class="btn" id="prevBtn">Previous</button>
+      <button class="btn" id="nextBtn">Next</button>
+    </div>
+  </div>
+
+  <script>
+    const vocabData = [
+      { word: "商业", pinyin: "shāngyè", meaning: "bisnis/perdagangan" },
+      { word: "市场调研", pinyin: "shìchǎng diàoyán", meaning: "riset pasar" },
+      { word: "竞争", pinyin: "jìngzhēng", meaning: "persaingan" },
+      { word: "生意", pinyin: "shēngyì", meaning: "usaha / bisnis" },
+      { word: "公司", pinyin: "gōngsī", meaning: "perusahaan" },
+      { word: "企业", pinyin: "qǐyè", meaning: "perusahaan/korporasi" },
+      { word: "市场", pinyin: "shìchǎng", meaning: "pasar" },
+      { word: "经济", pinyin: "jīngjì", meaning: "ekonomi" },
+      { word: "商务", pinyin: "shāngwù", meaning: "urusan bisnis" },
+      { word: "行业", pinyin: "hángyè", meaning: "industri/bidang usaha" },
+      { word: "投资", pinyin: "tóuzī", meaning: "investasi" },
+      { word: "战略", pinyin: "zhànlüè", meaning: "strategi" },
+      { word: "目标", pinyin: "mùbiāo", meaning: "target" },
+      { word: "合作伙伴", pinyin: "hézuò huǒbàn", meaning: "mitra bisnis" },
+      { word: "现金", pinyin: "xiànjīn", meaning: "uang tunai" },
+      { word: "总裁", pinyin: "zǒngcái", meaning: "CEO" },
+      { word: "支票", pinyin: "zhīpiào", meaning: "cek" },
+      { word: "账户", pinyin: "zhànghù", meaning: "rekening" },
+      { word: "汇率", pinyin: "huìlǜ", meaning: "kurs/nilai tukar" },
+      { word: "利润", pinyin: "lìrùn", meaning: "laba" },
+      { word: "风险", pinyin: "fēngxiǎn", meaning: "risiko" },
+      { word: "电商", pinyin: "diànshāng", meaning: "e-commerce" },
+      { word: "成本", pinyin: "chéngběn", meaning: "modal" },
+      { word: "发票", pinyin: "fāpiào", meaning: "faktur/invoice" },
+      { word: "创业", pinyin: "chuàngyè", meaning: "memulai usaha/startup" },
+      { word: "合同", pinyin: "hétóng", meaning: "kontrak" },
+      { word: "出口", pinyin: "chūkǒu", meaning: "ekspor" },
+      { word: "品牌", pinyin: "pǐnpái", meaning: "merek" },
+      { word: "进口", pinyin: "jìnkǒu", meaning: "impor" }
+    ];
+
+    let currentIndex = 0;
+    let shuffledIndices = [];
+
+    const wordDisplay = document.getElementById('wordDisplay');
+    const meaningDisplay = document.getElementById('meaningDisplay');
+    const pinyinDisplay = document.getElementById('pinyinDisplay');
+    const showPinyinBtn = document.getElementById('showPinyinBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const randomOrderCheckbox = document.getElementById('randomOrder');
+
+    function shuffleArray(arr) {
+      return [...arr].sort(() => Math.random() - 0.5);
+    }
+
+    function updateDisplay() {
+      const index = randomOrderCheckbox.checked 
+        ? shuffledIndices[currentIndex] 
+        : currentIndex;
+      const item = vocabData[index];
+      wordDisplay.textContent = item.word;
+      meaningDisplay.textContent = item.meaning;
+      pinyinDisplay.textContent = item.pinyin;
+      pinyinDisplay.style.opacity = '0';
+      showPinyinBtn.disabled = false;
+      prevBtn.disabled = currentIndex === 0;
+      nextBtn.disabled = currentIndex === vocabData.length - 1;
+    }
+
+    showPinyinBtn.onclick = function() {
+      pinyinDisplay.style.opacity = '1';
+      showPinyinBtn.disabled = true;
+    };
+
+    prevBtn.onclick = function() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateDisplay();
+      }
+    };
+
+    nextBtn.onclick = function() {
+      if (currentIndex < vocabData.length - 1) {
+        currentIndex++;
+        updateDisplay();
+      }
+    };
+
+    randomOrderCheckbox.onchange = function() {
+      if (randomOrderCheckbox.checked) {
+        shuffledIndices = shuffleArray([...Array(vocabData.length).keys()]);
+      } else {
+        shuffledIndices = [];
+      }
+      currentIndex = 0;
+      updateDisplay();
+    };
+
+    updateDisplay();
+  </script>
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tebak Pinyin — Bab 11: Freelance</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f5f0ff, #f8f8f8, #f0f5ff);
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .container {
+      background: white;
+      border-radius: 14px;
+      padding: 24px;
+      width: 100%;
+      max-width: 560px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      border: 1px solid #e6e0f0;
+    }
+    h1 {
+      font-size: 22px;
+      margin: 0 0 16px;
+      text-align: center;
+      color: #8a6a9a;
+      font-weight: 600;
+    }
+    .checkbox-container {
+      text-align: center;
+      margin-bottom: 18px;
+      font-size: 14px;
+      color: #5a5a5a;
+    }
+    .word-display {
+      font-size: 56px;
+      text-align: center;
+      margin: 16px 0;
+      color: #333;
+      font-family: "Noto Sans SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.3;
+    }
+    .meaning-display {
+      font-size: 16px;
+      text-align: center;
+      margin: 8px 0 20px;
+      color: #9a7aa6;
+      font-style: italic;
+    }
+    .pinyin-display {
+      font-size: 19px;
+      text-align: center;
+      margin: 10px 0;
+      color: #a68ab6;
+      font-weight: 600;
+      opacity: 0;
+    }
+    .btn {
+      background-color: #f0e0ff;
+      color: #8a6a9a;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 18px;
+      margin: 6px;
+      font-size: 15px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn:disabled {
+      background-color: #f8f0ff;
+      color: #b0a0c0;
+      cursor: not-allowed;
+    }
+    .navigation {
+      text-align: center;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Tebak Pinyin — Bab 11: Freelance</h1>
+    <div class="checkbox-container">
+      <label>
+        <input type="checkbox" id="randomOrder"> Acak urutan
+      </label>
+    </div>
+    <div class="word-display" id="wordDisplay">加载中...</div>
+    <div class="meaning-display" id="meaningDisplay">Memuat arti...</div>
+    <div class="pinyin-display" id="pinyinDisplay">zìyóu zhíyè</div>
+    <div style="text-align: center;">
+      <button class="btn" id="showPinyinBtn">Show Pinyin</button>
+    </div>
+    <div class="navigation">
+      <button class="btn" id="prevBtn">Previous</button>
+      <button class="btn" id="nextBtn">Next</button>
+    </div>
+  </div>
+
+  <script>
+    const vocabData = [
+      { word: "自由职业", pinyin: "zìyóu zhíyè", meaning: "pekerjaan freelance" },
+      { word: "自由职业者", pinyin: "zìyóu zhíyè zhě", meaning: "pekerja freelance" },
+      { word: "远程工作", pinyin: "yuǎnchéng gōngzuò", meaning: "kerja jarak jauh" },
+      { word: "在家办公", pinyin: "zài jiā bàngōng", meaning: "kerja dari rumah" },
+      { word: "接单", pinyin: "jiē dān", meaning: "menerima proyek" },
+      { word: "报价", pinyin: "bàojià", meaning: "penawaran harga" },
+      { word: "合同", pinyin: "hétóng", meaning: "kontrak" },
+      { word: "付款", pinyin: "fùkuǎn", meaning: "pembayaran" },
+      { word: "定金", pinyin: "dìngjīn", meaning: "uang muka" },
+      { word: "尾款", pinyin: "wěikuǎn", meaning: "pelunasan" },
+      { word: "客户", pinyin: "kèhù", meaning: "klien" },
+      { word: "项目", pinyin: "xiàngmù", meaning: "proyek" },
+      { word: "截止日期", pinyin: "jiézhǐ rìqī", meaning: "batas waktu" },
+      { word: "交付", pinyin: "jiāofù", meaning: "menyerahkan hasil kerja" },
+      { word: "修改", pinyin: "xiūgǎi", meaning: "revisi" },
+      { word: "平台", pinyin: "píngtái", meaning: "platform (freelance)" },
+      { word: "个人品牌", pinyin: "gèrén pǐnpái", meaning: "personal branding" },
+      { word: "作品集", pinyin: "zuòpǐn jí", meaning: "portofolio" },
+      { word: "技能", pinyin: "jìnéng", meaning: "kemampuan / skill" },
+      { word: "收入", pinyin: "shōurù", meaning: "pendapatan" },
+      { word: "税务", pinyin: "shuìwù", meaning: "perpajakan" },
+      { word: "发票", pinyin: "fāpiào", meaning: "faktur / invoice" },
+      { word: "自雇", pinyin: "zìgù", meaning: "self-employed" },
+      { word: "灵活", pinyin: "línghuó", meaning: "fleksibel" },
+      { word: "独立", pinyin: "dúlì", meaning: "mandiri" }
+    ];
+
+    let currentIndex = 0;
+    let shuffledIndices = [];
+
+    const wordDisplay = document.getElementById('wordDisplay');
+    const meaningDisplay = document.getElementById('meaningDisplay');
+    const pinyinDisplay = document.getElementById('pinyinDisplay');
+    const showPinyinBtn = document.getElementById('showPinyinBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const randomOrderCheckbox = document.getElementById('randomOrder');
+
+    function shuffleArray(arr) {
+      return [...arr].sort(() => Math.random() - 0.5);
+    }
+
+    function updateDisplay() {
+      const index = randomOrderCheckbox.checked 
+        ? shuffledIndices[currentIndex] 
+        : currentIndex;
+      const item = vocabData[index];
+      wordDisplay.textContent = item.word;
+      meaningDisplay.textContent = item.meaning;
+      pinyinDisplay.textContent = item.pinyin;
+      pinyinDisplay.style.opacity = '0';
+      showPinyinBtn.disabled = false;
+      prevBtn.disabled = currentIndex === 0;
+      nextBtn.disabled = currentIndex === vocabData.length - 1;
+    }
+
+    showPinyinBtn.onclick = function() {
+      pinyinDisplay.style.opacity = '1';
+      showPinyinBtn.disabled = true;
+    };
+
+    prevBtn.onclick = function() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateDisplay();
+      }
+    };
+
+    nextBtn.onclick = function() {
+      if (currentIndex < vocabData.length - 1) {
+        currentIndex++;
+        updateDisplay();
+      }
+    };
+
+    randomOrderCheckbox.onchange = function() {
+      if (randomOrderCheckbox.checked) {
+        shuffledIndices = shuffleArray([...Array(vocabData.length).keys()]);
+      } else {
+        shuffledIndices = [];
+      }
+      currentIndex = 0;
+      updateDisplay();
+    };
+
+    updateDisplay();
+  </script>
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tebak Pinyin — Bab 8: Perkantoran</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f8f8f8, #f0f5ff, #f5f0f8);
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .container {
+      background: white;
+      border-radius: 14px;
+      padding: 24px;
+      width: 100%;
+      max-width: 560px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      border: 1px solid #e0e0e6;
+    }
+    h1 {
+      font-size: 22px;
+      margin: 0 0 16px;
+      text-align: center;
+      color: #6a6a8a;
+      font-weight: 600;
+    }
+    .checkbox-container {
+      text-align: center;
+      margin-bottom: 18px;
+      font-size: 14px;
+      color: #5a5a5a;
+    }
+    .word-display {
+      font-size: 56px;
+      text-align: center;
+      margin: 16px 0;
+      color: #333;
+      font-family: "Noto Sans SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.3;
+    }
+    .meaning-display {
+      font-size: 16px;
+      text-align: center;
+      margin: 8px 0 20px;
+      color: #7a7a9a;
+      font-style: italic;
+    }
+    .pinyin-display {
+      font-size: 19px;
+      text-align: center;
+      margin: 10px 0;
+      color: #8a8a9a;
+      font-weight: 600;
+      opacity: 0;
+    }
+    .btn {
+      background-color: #f0f0ff;
+      color: #6a6a8a;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 18px;
+      margin: 6px;
+      font-size: 15px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn:disabled {
+      background-color: #f8f8ff;
+      color: #b0b0c0;
+      cursor: not-allowed;
+    }
+    .navigation {
+      text-align: center;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Tebak Pinyin — Bab 8: Perkantoran</h1>
+    <div class="checkbox-container">
+      <label>
+        <input type="checkbox" id="randomOrder"> Acak urutan
+      </label>
+    </div>
+    <div class="word-display" id="wordDisplay">加载中...</div>
+    <div class="meaning-display" id="meaningDisplay">Memuat arti...</div>
+    <div class="pinyin-display" id="pinyinDisplay">bàngōngshì</div>
+    <div style="text-align: center;">
+      <button class="btn" id="showPinyinBtn">Show Pinyin</button>
+    </div>
+    <div class="navigation">
+      <button class="btn" id="prevBtn">Previous</button>
+      <button class="btn" id="nextBtn">Next</button>
+    </div>
+  </div>
+
+  <script>
+    const vocabData = [
+      { word: "办公室", pinyin: "bàngōngshì", meaning: "kantor" },
+      { word: "会议室", pinyin: "huìyìshì", meaning: "ruang rapat" },
+      { word: "接待室", pinyin: "jiēdàishì", meaning: "ruang resepsionis" },
+      { word: "前台", pinyin: "qiántái", meaning: "meja resepsionis" },
+      { word: "茶水间", pinyin: "cháshuǐjiān", meaning: "ruang minum" },
+      { word: "办公楼", pinyin: "bàngōng lóu", meaning: "gedung perkantoran" },
+      { word: "打印机", pinyin: "dǎyìnjī", meaning: "printer" },
+      { word: "复印机", pinyin: "fùyìnjī", meaning: "mesin fotokopi" },
+      { word: "开会", pinyin: "kāihuì", meaning: "rapat" },
+      { word: "办公", pinyin: "bàngōng", meaning: "bekerja di kantor" },
+      { word: "职员", pinyin: "zhíyuán", meaning: "pegawai" },
+      { word: "上司", pinyin: "shàngsī", meaning: "atasan" },
+      { word: "下属", pinyin: "xiàshǔ", meaning: "bawahan" },
+      { word: "经理", pinyin: "jīnglǐ", meaning: "manajer" },
+      { word: "主任", pinyin: "zhǔrèn", meaning: "kepala bagian" },
+      { word: "董事长", pinyin: "dǒngshìzhǎng", meaning: "ketua dewan direksi" },
+      { word: "秘书", pinyin: "mìshū", meaning: "sekretaris" },
+      { word: "打印", pinyin: "dǎyìn", meaning: "mencetak / print" },
+      { word: "复印", pinyin: "fùyìn", meaning: "fotokopi" },
+      { word: "签名", pinyin: "qiānmíng", meaning: "tanda tangan" },
+      { word: "文件", pinyin: "wénjiàn", meaning: "dokumen" },
+      { word: "邮件", pinyin: "yóujiàn", meaning: "email / surat" },
+      { word: "报告", pinyin: "bàogào", meaning: "laporan" },
+      { word: "传真机", pinyin: "chuánzhēnjī", meaning: "mesin faks" },
+      { word: "扫描仪", pinyin: "sǎomiáoyí", meaning: "scanner" },
+      { word: "投影仪", pinyin: "tóuyǐngyí", meaning: "proyektor" },
+      { word: "订书机", pinyin: "dìngshūjī", meaning: "stapler" },
+      { word: "回形针", pinyin: "huíxíngzhēn", meaning: "paper clip" },
+      { word: "文件夹", pinyin: "wénjiànjiā", meaning: "map" }
+    ];
+
+    let currentIndex = 0;
+    let shuffledIndices = [];
+
+    const wordDisplay = document.getElementById('wordDisplay');
+    const meaningDisplay = document.getElementById('meaningDisplay');
+    const pinyinDisplay = document.getElementById('pinyinDisplay');
+    const showPinyinBtn = document.getElementById('showPinyinBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const randomOrderCheckbox = document.getElementById('randomOrder');
+
+    function shuffleArray(arr) {
+      return [...arr].sort(() => Math.random() - 0.5);
+    }
+
+    function updateDisplay() {
+      const index = randomOrderCheckbox.checked 
+        ? shuffledIndices[currentIndex] 
+        : currentIndex;
+      const item = vocabData[index];
+      wordDisplay.textContent = item.word;
+      meaningDisplay.textContent = item.meaning;
+      pinyinDisplay.textContent = item.pinyin;
+      pinyinDisplay.style.opacity = '0';
+      showPinyinBtn.disabled = false;
+      prevBtn.disabled = currentIndex === 0;
+      nextBtn.disabled = currentIndex === vocabData.length - 1;
+    }
+
+    showPinyinBtn.onclick = function() {
+      pinyinDisplay.style.opacity = '1';
+      showPinyinBtn.disabled = true;
+    };
+
+    prevBtn.onclick = function() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateDisplay();
+      }
+    };
+
+    nextBtn.onclick = function() {
+      if (currentIndex < vocabData.length - 1) {
+        currentIndex++;
+        updateDisplay();
+      }
+    };
+
+    randomOrderCheckbox.onchange = function() {
+      if (randomOrderCheckbox.checked) {
+        shuffledIndices = shuffleArray([...Array(vocabData.length).keys()]);
+      } else {
+        shuffledIndices = [];
+      }
+      currentIndex = 0;
+      updateDisplay();
+    };
+
+    updateDisplay();
+  </script>
+</body>
+</html>
