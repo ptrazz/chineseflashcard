@@ -154,29 +154,40 @@
       grid5.innerHTML += `<div class="card5"><a href="${baseURL5 + p}" target="_blank">${name}</a></div>`;
     });
 
-   /* ==========================
-       GRID 6 — HSK 2 
-       ========================== */
-    const baseURL6 = "https://ptrazz.github.io/chineseflashcard/HSK-2/Vocab/";
-  
-  const pages6 = [
-  { name: "Pendidikan", file: "bab-pendidikan.html" },
-  { name: "Bisnis", file: "bab-bisnis.html" },
-  { name: "Kata Hubung", file: "bab-katahubung.html" },
-  { name: "Sertifikat", file: "bab-sertifikat.html" },
-  { name: "Pertambangan", file: "bab-pertambangan.html" },
-  { name: "Alat Bangunan", file: "bab-alatbangunan.html" },
-  { name: "Alat Elektronik", file: "bab-alatelektronik.html" },
-  { name: "Perkantoran", file: "bab-perkantoran.html" },
-  { name: "Pemasaran", file: "bab-pemasaran.html" },
-  { name: "Logistik", file: "bab-logistik.html" },
-  { name: "Freelance", file: "bab-freelance.html" },
-  { name: "HR", file: "bab-hr.html" },
-  { name: "Tour Guide", file: "bab-tourguide.html" },
-  { name: "Medis", file: "bab-medis.html" },
-  { name: "Refleksi Diri", file: "bab-refleksidiri.html" }
-];
+   <script>
+  // ... (bagian grid1 sampai grid5 tetap sama)
 
+  /* ==========================
+     GRID 6 — HSK 2 
+     ========================== */
+  const baseURL6 = "https://ptrazz.github.io/chineseflashcard/HSK-2/Vocab/"; // ❌ HAPUS SPASI DI AKHIR
+
+  // ✅ GUNAKAN ARRAY STRING, BUKAN OBJECT
+  const pages6 = [
+    "bab-pendidikan.html",
+    "bab-bisnis.html",
+    "bab-katahubung.html",
+    "bab-sertifikat.html",
+    "bab-pertambangan.html",
+    "bab-alatbangunan.html",
+    "bab-alatelektronik.html",
+    "bab-perkantoran.html",
+    "bab-pemasaran.html",
+    "bab-logistik.html",
+    "bab-freelance.html",
+    "bab-hr.html",
+    "bab-tourguide.html",
+    "bab-medis.html",
+    "bab-refleksidiri.html"
+  ];
+
+  const grid6 = document.getElementById('list6');
+  pages6.forEach(p => {
+    // ✅ Sekarang `p` adalah string, jadi ini aman
+    const name = p.replace(".html","").replace(/-/g," ").replace(/\b\w/g,c=>c.toUpperCase());
+    grid6.innerHTML += `<div class="card6"><a href="${baseURL6 + p}" target="_blank">${name}</a></div>`;
+  });
+</script>
     const grid6 = document.getElementById('list6');
     pages6.forEach(p => {
       const name = p.replace(".html","").replace(/-/g," ").replace(/\b\w/g,c=>c.toUpperCase());
@@ -187,5 +198,6 @@
 
 </body>
 </html>
+
 
 
