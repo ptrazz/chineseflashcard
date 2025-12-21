@@ -66,7 +66,6 @@
   <div class="grid6" id="list6"></div>
 
 <script>
-
     /* ==========================
        GRID 1 — VOCAB
        ========================== */
@@ -85,7 +84,6 @@
       grid1.innerHTML += `<div class="card1"><a href="${baseURL1 + p}" target="_blank">${name}</a></div>`;
     });
 
-
     /* ==========================
        GRID 2 — WRITING (Tebak Arti)
        ========================== */
@@ -102,7 +100,6 @@
       const name = p.replace(".html","").replace(/-/g," ").replace(/\b\w/g,c=>c.toUpperCase());
       grid2.innerHTML += `<div class="card2"><a href="${baseURL2 + p}" target="_blank">${name}</a></div>`;
     });
-
 
     /* ==========================
        GRID 3 — WRITING (Tebak Pinyin)
@@ -122,7 +119,6 @@
       grid3.innerHTML += `<div class="card3"><a href="${baseURL2 + p}" target="_blank">${name}</a></div>`;
     });
 
-
     /* ==========================
        GRID 4 — TEBAK HANZI
        ========================== */
@@ -140,9 +136,8 @@
       grid4.innerHTML += `<div class="card4"><a href="${baseURL2 + p}" target="_blank">${name}</a></div>`;
     });
 
-
     /* ==========================
-       GRID 5 — HSK 1 (hanya 1 file)
+       GRID 5 — HSK 1
        ========================== */
     const baseURL5 = "https://ptrazz.github.io/chineseflashcard/HSK-1/";
 
@@ -154,44 +149,35 @@
       grid5.innerHTML += `<div class="card5"><a href="${baseURL5 + p}" target="_blank">${name}</a></div>`;
     });
 
-   <script>
-  // ... (bagian grid1 sampai grid5 tetap sama)
+    /* ==========================
+       GRID 6 — HSK 2 
+       ========================== */
+    const baseURL6 = "https://ptrazz.github.io/chineseflashcard/HSK-2/Vocab/";
 
-  /* ==========================
-     GRID 6 — HSK 2 
-     ========================== */
-  const baseURL6 = "https://ptrazz.github.io/chineseflashcard/HSK-2/Vocab/"; // ❌ HAPUS SPASI DI AKHIR
+    const pages6 = [
+      "bab-pendidikan.html",
+      "bab-bisnis.html",
+      "bab-katahubung.html",
+      "bab-sertifikat.html",
+      "bab-pertambangan.html",
+      "bab-alatbangunan.html",
+      "bab-alatelektronik.html",
+      "bab-perkantoran.html",
+      "bab-pemasaran.html",
+      "bab-logistik.html",
+      "bab-freelance.html",
+      "bab-hr.html",
+      "bab-tourguide.html",
+      "bab-medis.html",
+      "bab-refleksidiri.html"
+    ];
 
-  // ✅ GUNAKAN ARRAY STRING, BUKAN OBJECT
-  const pages6 = [
-    "bab-pendidikan.html",
-    "bab-bisnis.html",
-    "bab-katahubung.html",
-    "bab-sertifikat.html",
-    "bab-pertambangan.html",
-    "bab-alatbangunan.html",
-    "bab-alatelektronik.html",
-    "bab-perkantoran.html",
-    "bab-pemasaran.html",
-    "bab-logistik.html",
-    "bab-freelance.html",
-    "bab-hr.html",
-    "bab-tourguide.html",
-    "bab-medis.html",
-    "bab-refleksidiri.html"
-  ];
-
-  const grid6 = document.getElementById('list6');
-  pages6.forEach(p => {
-    // ✅ Sekarang `p` adalah string, jadi ini aman
-    const name = p.replace(".html","").replace(/-/g," ").replace(/\b\w/g,c=>c.toUpperCase());
-    grid6.innerHTML += `<div class="card6"><a href="${baseURL6 + p}" target="_blank">${name}</a></div>`;
-  });
+    const grid6 = document.getElementById('list6');
+    pages6.forEach(p => {
+      const name = p.replace(".html","").replace(/-/g," ").replace(/\b\w/g,c=>c.toUpperCase());
+      grid6.innerHTML += `<div class="card6"><a href="${baseURL6 + p}" target="_blank">${name}</a></div>`;
+    });
 </script>
 
 </body>
 </html>
-
-
-
-
