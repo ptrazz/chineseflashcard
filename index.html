@@ -16,14 +16,14 @@
     color: #1e3a8a;
     margin-bottom: 30px;
   }
-  .grid1, .grid2, .grid3, .grid4, .grid5 {
+  .grid1, .grid2, .grid3, .grid4, .grid5, .grid6 {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 15px;
     max-width: 900px;
     margin: 0 auto 50px;
   }
-  .card1, .card2, .card3, .card4, .card5 {
+  .card1, .card2, .card3, .card4, .card5, .card6 {
     background: white;
     border-radius: 12px;
     padding: 20px;
@@ -31,7 +31,7 @@
     box-shadow: 0 6px 20px rgba(0,0,0,0.05);
     transition: transform .2s, box-shadow .2s;
   }
-  .card1:hover, .card2:hover, .card3:hover, .card4:hover, .card5:hover {
+  .card1:hover, .card2:hover, .card3:hover, .card4:hover, .card5:hover, .card6:hover {
     transform: translateY(-4px);
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
   }
@@ -61,6 +61,9 @@
 
   <h2>HSK-1</h2>
   <div class="grid5" id="list5"></div>
+  
+  <h2>HSK-2</h2>
+  <div class="grid6" id="list6"></div>
 
 <script>
 
@@ -151,8 +154,38 @@
       grid5.innerHTML += `<div class="card5"><a href="${baseURL5 + p}" target="_blank">${name}</a></div>`;
     });
 
+   /* ==========================
+       GRID 6 — HSK 2 
+       ========================== */
+    const baseURL6 = "https://ptrazz.github.io/chineseflashcard/HSK-2/Vocab/";
+  
+  const pages6 = [
+  { name: "Pendidikan", file: "bab-pendidikan.html" },
+  { name: "Bisnis", file: "bab-bisnis.html" },
+  { name: "Kata Hubung", file: "bab-katahubung.html" },
+  { name: "Sertifikat", file: "bab-sertifikat.html" },
+  { name: "Pertambangan", file: "bab-pertambangan.html" },
+  { name: "Alat Bangunan", file: "bab-alatbangunan.html" },
+  { name: "Alat Elektronik", file: "bab-alatelektronik.html" },
+  { name: "Perkantoran", file: "bab-perkantoran.html" },
+  { name: "Pemasaran", file: "bab-pemasaran.html" },
+  { name: "Logistik", file: "bab-logistik.html" },
+  { name: "Freelance", file: "bab-freelance.html" },
+  { name: "HR", file: "bab-hr.html" },
+  { name: "Tour Guide", file: "bab-tourguide.html" },
+  { name: "Medis", file: "bab-medis.html" },
+  { name: "Refleksi Diri", file: "bab-refleksidiri.html" }
+];
+
+    const grid6 = document.getElementById('list6');
+    pages6.forEach(p => {
+      const name = p.replace(".html","").replace(/-/g," ").replace(/\b\w/g,c=>c.toUpperCase());
+      grid6.innerHTML += `<div class="card6"><a href="${baseURL6 + p}" target="_blank">${name}</a></div>`;
+    });
+
 </script>
 
 </body>
 </html>
+
 
